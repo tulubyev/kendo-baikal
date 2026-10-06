@@ -1,7 +1,7 @@
 ---
 title: "Фото"
 menu: true
-order: 140
+order: 145
 ---
 
 Фотографии и видео с тренировок и турниров — в группе клуба ВКонтакте: [vk.com/kendo_baikal](https://vk.com/kendo_baikal).

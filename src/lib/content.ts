@@ -1,3 +1,4 @@
+import { uploadSize } from './image-size.mjs';
 import { getCollection, type CollectionEntry } from 'astro:content';
 import { SITE } from '../site.config';
 
@@ -65,4 +66,50 @@ export function pageCrumbs(page: Page, all: Page[]): Crumb[] {
   }
   crumbs.push({ title: page.data.title });
   return crumbs;
+}
+
+/** Главное меню «в одну строку»: родитель, затем его подпункты (как плоский список кистей на старом сайте). */
+export async function getFlatMenu(): Promise<NavItem[]> {
+  const out: NavItem[] = [];
+  const walk = (items: NavItem[]) => items.forEach((i) => (out.push(i), walk(i.children)));
+  walk(await getMenu());
+  return out;
+}
+
+export interface TreeItem {
+  title: string;
+  href: string;
+  children: TreeItem[];
+}
+
+/** Дерево всех страниц (кроме главной) для блока «Страницы» в сайдбаре: по алфавиту, латиница раньше кириллицы. */
+export async function getPageTree(): Promise<TreeItem[]> {
+  const pages = (await getPages()).filter((p) => p.id !== 'index');
+  const byId = new Map<string, TreeItem>(pages.map((p) => [p.id, { title: p.data.title, href: pageUrl(p.id), children: [] }]));
+  const top: TreeItem[] = [];
+  for (const p of pages) {
+    const parts = p.id.split('/');
+    let parent: TreeItem | undefined;
+    for (let i = parts.length - 1; i > 0 && !parent; i--) parent = byId.get(parts.slice(0, i).join('/'));
+    (parent ? parent.children : top).push(byId.get(p.id)!);
+  }
+  const sort = (items: TreeItem[]) => {
+    items.sort((a, b) => a.title.localeCompare(b.title, ['en', 'ru']));
+    items.forEach((i) => sort(i.children));
+    return items;
+  };
+  return sort(top);
+}
+
+export interface PostImage {
+  src: string;
+  width?: number;
+  height?: number;
+}
+
+/** Картинка для ленты: cover из frontmatter либо первая локальная картинка из текста записи. */
+export function postImage(post: Post): PostImage | undefined {
+  const src = post.data.cover ?? /!\[[^\]]*\]\((\/uploads\/[^)\s]+)/.exec(post.body ?? '')?.[1];
+  if (!src) return undefined;
+  return { src, ...uploadSize(src) };
 }

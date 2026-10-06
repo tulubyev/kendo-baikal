@@ -20,21 +20,20 @@ const { title, description, image } = home.data;
       {image && <Cover src={image} eager class="hero" />}
       <div class="prose"><Content /></div>
     </section>
-
-    {
-      latest.length > 0 && (
-        <section class="latest" aria-labelledby="latest">
-          <h2 id="latest">Последние новости</h2>
-          {latest.map((post) => <PostCard post={post} />)}
-          <p class="all"><a href="/news/">Все новости →</a></p>
-        </section>
-      )
-    }
   </div>
+
+  {
+    latest.length > 0 && (
+      <section class="panel" aria-labelledby="latest">
+        <h2 id="latest" class="visually-hidden">Последние новости</h2>
+        {latest.map((post, i) => <PostCard post={post} priority={i === 0} />)}
+        <p class="all"><a href="/news/">Все новости →</a></p>
+      </section>
+    )
+  }
 </Base>
 
 <style>
   :global(.hero) { margin-block: var(--space-4); }
-  .latest { margin-top: var(--space-6); padding-top: var(--space-4); border-top: 1px solid var(--color-border); }
-  .all { margin: var(--space-3) 0 0; }
+  .all { margin: 0; font-weight: var(--font-weight-bold); }
 </style>

@@ -29,17 +29,21 @@ const props = Astro.props;
     <link rel="alternate" type="application/rss+xml" title={`${SITE.name} — новости`} href="/rss.xml" />
     <link rel="sitemap" href="/sitemap-index.xml" />
     <link rel="preload" href="/fonts/inter-cyrillic-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/theme/topbg.webp" as="image" type="image/webp" fetchpriority="high" />
     <meta name="generator" content={Astro.generator} />
     <SEO {...props} />
   </head>
   <body>
     <a class="skip-link" href="#main">Перейти к содержимому</a>
-    <Header />
-    <div class="wrap layout">
-      <main id="main" tabindex="-1">
-        <slot />
-      </main>
-      <Sidebar />
+    <div class="stage">
+      <img class="stage-bg" src="/theme/topbg.webp" alt="" width="1280" height="471" fetchpriority="high" decoding="async" />
+      <Header />
+      <div class="wrap layout">
+        <main id="main" tabindex="-1">
+          <slot />
+        </main>
+        <Sidebar />
+      </div>
     </div>
     <Footer />
   </body>

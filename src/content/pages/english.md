@@ -1,6 +1,8 @@
 ---
 title: "English"
 description: "Wellcome to our web site. We've been practicing kendo in Irkutsk since 2003."
+menu: true
+order: 20
 ---
 
 ## BAIKAL KENDO FEDERATION

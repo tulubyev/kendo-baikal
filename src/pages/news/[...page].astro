@@ -1,7 +1,6 @@
 ---
 import type { GetStaticPaths } from 'astro';
 import Base from '../../layouts/Base.astro';
-import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import PostCard from '../../components/PostCard.astro';
 import Pagination from '../../components/Pagination.astro';
 import { getPosts } from '../../lib/content';
@@ -20,16 +19,9 @@ const title = page.currentPage > 1 ? `Новости — страница ${page
 
 <Base title={title} description={`Новости клуба «${SITE.name}»`}>
   <div class="panel">
-    <Breadcrumbs items={[{ title: 'Главная', href: '/' }, { title: 'Новости' }]} />
-    <h1>Новости</h1>
+    <h1 class="visually-hidden">{title}</h1>
     {page.data.length === 0 && <p>Пока новостей нет.</p>}
-    <div class="list">
-      {page.data.map((post) => <PostCard post={post} />)}
-    </div>
+    {page.data.map((post, i) => <PostCard post={post} priority={i === 0} />)}
     <Pagination current={page.currentPage} total={page.lastPage} href={href} />
   </div>
 </Base>
-
-<style>
-  h1 { margin-bottom: var(--space-4); }
-</style>

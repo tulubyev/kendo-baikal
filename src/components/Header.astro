@@ -1,49 +1,31 @@
 ---
 import { SITE } from '../site.config';
-import { getMenu, type NavItem } from '../lib/content';
+import { getFlatMenu } from '../lib/content';
 
-const menu = await getMenu();
+const menu = await getFlatMenu();
 const path = Astro.url.pathname;
-const isCurrent = (href: string) => path === href;
-const isSection = (item: NavItem) => item.children.some((c) => path.startsWith(c.href)) || (item.href !== '/' && path !== item.href && path.startsWith(item.href));
 const external = (href: string) => /^https?:\/\//.test(href);
 ---
 
 <header class="site-header">
-  <div class="wrap bar">
-    <a class="brand" href="/" aria-label={`${SITE.name} — на главную`}>
-      <span class="mark" aria-hidden="true">К</span>
-      <span class="titles">
-        <span class="name">{SITE.name}</span>
-        <span class="tagline">{SITE.tagline}</span>
-      </span>
-    </a>
+  <div class="inner">
+    <p class="site-title"><a href="/">{SITE.name}</a></p>
 
-    <input type="checkbox" id="nav-toggle" class="nav-toggle visually-hidden" />
-    <label for="nav-toggle" class="burger"><span class="visually-hidden">Меню</span><i aria-hidden="true"></i></label>
+    <input type="checkbox" id="nav-toggle" class="nav-toggle visually-hidden" aria-label="Показать или скрыть меню" />
+    <label for="nav-toggle" class="burger"><span>Меню</span></label>
 
     <nav class="nav" aria-label="Главное меню">
-      <ul class="top">
+      <ul>
         {
           menu.map((item) => (
-            <li class:list={{ 'has-sub': item.children.length > 0 }}>
+            <li>
               <a
                 href={item.href}
-                aria-current={isCurrent(item.href) ? 'page' : undefined}
-                class:list={{ section: isSection(item) }}
+                aria-current={path === item.href ? 'page' : undefined}
                 rel={external(item.href) ? 'noopener' : undefined}
               >
                 {item.title}
               </a>
-              {item.children.length > 0 && (
-                <ul class="sub">
-                  {item.children.map((c) => (
-                    <li>
-                      <a href={c.href} aria-current={isCurrent(c.href) ? 'page' : undefined}>{c.title}</a>
-                    </li>
-                  ))}
-                </ul>
-              )}
             </li>
           ))
         }
@@ -53,49 +35,45 @@ const external = (href: string) => /^https?:\/\//.test(href);
 </header>
 
 <style>
-  .site-header { background: var(--color-header-bg) var(--bg-paper); border-bottom: 1px solid var(--color-border); position: relative; z-index: 50; }
-  .bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-4); padding-block: var(--space-4) var(--space-3); }
-  .brand { flex: 1 1 0; min-width: 0; display: inline-flex; align-items: center; gap: var(--space-3); color: var(--color-heading); text-decoration: none; }
-  .mark {
-    display: grid; place-items: center; flex: none;
-    width: 3rem; height: 3rem; border-radius: 50%;
-    background: var(--color-nav-bg); color: var(--color-nav-text);
-    font-size: 1.6rem; line-height: 1;
-  }
-  .titles { display: flex; flex-direction: column; line-height: 1.2; }
-  .name { font-family: var(--font-heading); font-weight: var(--font-weight-bold); font-size: var(--text-xl); }
-  .tagline { font-size: var(--text-sm); color: var(--color-text-muted); }
-  .brand:hover .name { color: var(--color-accent); }
+  .site-header { position: relative; z-index: 5; }
+  .inner { width: 100%; max-width: calc(var(--container-width) + 2 * var(--gutter)); margin-inline: auto; padding: var(--space-5) var(--gutter) var(--space-3); }
+  .site-title { margin: 0 0 var(--space-4); font-size: var(--text-site); font-weight: var(--font-weight-bold); line-height: 1.2; }
+  .site-title a { color: #000; text-decoration: none; }
 
-  .burger { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; cursor: pointer; border-radius: var(--radius); border: 1px solid var(--color-border); }
-  .burger i, .burger i::before, .burger i::after { display: block; width: 1.4rem; height: 2px; background: var(--color-heading); content: ''; }
-  .burger i { position: relative; }
-  .burger i::before { position: absolute; top: -7px; }
-  .burger i::after { position: absolute; top: 7px; }
+  /* Мобильное меню: чекбокс + CSS, без JS */
+  .burger {
+    display: inline-block; cursor: pointer; min-height: 2.75rem; line-height: 2.75rem; padding: 0 var(--space-5);
+    background: var(--color-ink); color: var(--color-nav-text); border-radius: var(--radius-lg);
+    font-size: var(--text-base); font-weight: var(--font-weight-bold);
+  }
+  .burger::after { content: ' ▾'; }
+  .nav-toggle:checked + .burger::after { content: ' ▴'; }
   .nav-toggle:focus-visible + .burger { outline: 3px solid var(--color-focus); outline-offset: 2px; }
-
-  .nav { display: none; flex-basis: 100%; }
+  .nav { display: none; margin-top: var(--space-2); }
   .nav-toggle:checked ~ .nav { display: block; }
-  ul { list-style: none; margin: 0; padding: 0; }
+  ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
   .nav a {
-    display: block; padding: var(--space-3) var(--space-4); margin-bottom: 2px;
-    background: var(--color-nav-bg); color: var(--color-nav-text); text-decoration: none; border-radius: var(--radius-lg);
+    display: block; min-height: 2.75rem; padding: 0.55rem var(--space-4);
+    background: var(--color-ink); color: var(--color-nav-text); border-radius: var(--radius-lg);
+    font-size: var(--text-base); text-decoration: none;
   }
-  .nav a:hover, .nav a:focus-visible { background: var(--color-nav-hover); }
-  .nav a[aria-current='page'], .nav a.section { background: var(--color-accent); }
-  .nav .sub { margin: 2px 0 var(--space-2) var(--space-5); }
-  .nav .sub a { background: #55503f; font-size: var(--text-sm); padding-block: var(--space-2); }
+  .nav a:hover, .nav a:focus-visible { color: var(--color-nav-hover); }
+  .nav a[aria-current='page'] { color: var(--color-nav-hover); font-weight: var(--font-weight-bold); }
 
-  @media (min-width: 56em) {
+  /* Десктоп: два ряда «кистей» (картинки старой темы + сплошная заливка посередине) */
+  @media (min-width: 62em) {
+    .inner { padding: 3rem var(--gutter) 0.75rem; }
+    .site-title { margin: 0 0 1.4rem 6.25rem; }
     .burger { display: none; }
-    .nav, .nav-toggle:checked ~ .nav { display: block; flex-basis: 100%; }
-    .top { display: flex; flex-wrap: wrap; gap: var(--space-2); }
-    .top > li { position: relative; }
-    .nav a { margin: 0; padding: var(--space-2) var(--space-4); font-size: var(--text-sm); }
-    .nav .sub {
-      display: none; position: absolute; left: 0; top: 100%; z-index: 60; min-width: 13rem; margin: 0; padding-top: 2px;
+    .nav, .nav-toggle:checked ~ .nav { display: block; margin: 0; }
+    ul { display: flex; flex-wrap: wrap; gap: 0.125rem 0.1rem; padding-left: 0.25rem; }
+    .nav a {
+      display: block; height: 40px; min-height: 0; padding: 0 21px 0 19px; line-height: 40px; border-radius: 0;
+      font-size: 0.875rem; letter-spacing: -0.005em; white-space: nowrap;
+      background:
+        url('/theme/abgr.webp') right center / auto 40px no-repeat,
+        url('/theme/abgl.webp') left center / auto 40px no-repeat,
+        linear-gradient(var(--color-ink), var(--color-ink)) 40px 9px / calc(100% - 68px) 25px no-repeat;
     }
-    .nav .sub a { margin-top: 2px; font-size: var(--text-sm); padding-block: var(--space-2); background: var(--color-nav-bg); }
-    .has-sub:hover > .sub, .has-sub:focus-within > .sub { display: block; }
   }
 </style>

@@ -1,49 +1,52 @@
 /*
  * Дизайн-токены. ВСЕ визуальные параметры сайта живут здесь.
- * Источник: design-import/tokens.json и theme/ink-and-wash/style.css (старая тема «тушь и акварель»):
- * тёплая сепия, фон #e3ddcd, текст #222, акцент #6b3909, контейнер 950px.
- * Китайский шрифтовой стек и пиксельные размеры (12px) старой темы НЕ перенесены:
- * основной текст ≥16px, шрифты — локальные (см. fonts.css), без CDN.
+ * Источник: скриншоты старого сайта (design-import/screenshots/) и тема ink-and-wash
+ * (design-import/theme/ink-and-wash/style.css): бумажный фон #e3ddcd, «лист» #f7f5ef, чёрные кисти меню, контейнер 950px.
+ * Китайский шрифтовой стек и пиксельные размеры (12px) старой темы не перенесены:
+ * основной текст ≥16px, шрифт — локальный Inter (см. fonts.css), без CDN.
+ * Картинки оформления (public/theme/*.webp) — перекодированные ресурсы старой темы.
  */
 :root {
   /* Цвета */
   --color-bg: #e3ddcd;
-  --color-paper: #f4f0e8;         /* «лист» под контентом */
-  --color-surface: #ebe5d5;       /* плашки, цитаты, код */
+  --color-paper: #f7f5ef;         /* «лист бумаги» под контентом */
+  --color-surface: #ece6d6;       /* плашки, цитаты, код */
   --color-text: #222222;
-  --color-text-muted: #55503f;    /* контраст на --color-paper ≈ 7:1 */
+  --color-text-muted: #5a5440;    /* контраст на --color-paper ≈ 6.8:1 */
   --color-heading: #111111;
-  --color-border: #ccbf9c;
-  --color-border-soft: #d8cca7;
+  --color-border: #d8cfb5;
+  --color-border-soft: #e2dac4;
+  --color-dash: #8a8371;          /* пунктирные разделители списков */
   --color-accent: #6b3909;
   --color-accent-hover: #4b2606;
-  --color-on-accent: #f4f0e8;
-  --color-link: #5a4a1c;
-  --color-link-visited: #5a4a1c;
-  --color-green: #2e5a2b;         /* зелёные детали старой темы (даты, рубрики) */
+  --color-on-accent: #f7f5ef;
+  --color-link: #5a4a1c;          /* контраст на бумаге ≈ 8:1 */
+  --color-green: #3c6a38;         /* зелёные детали старой темы (месяц/год на плашке), ≥4.5:1 */
   --color-focus: #1a5fd0;
-  --color-nav-bg: #3a3326;        /* «тушь» — кнопки меню */
-  --color-nav-text: #f4f0e8;
-  --color-nav-hover: #6b3909;
-  --color-header-bg: #e3ddcd;
-  --color-footer-bg: #d4cdb9;
-  --color-footer-text: #3d382b;
-  --color-footer-link: #3a2a0a;
+  --color-ink: #0b0a08;           /* «тушь» кистей */
+  --color-nav-text: #f7f5ef;
+  --color-nav-hover: #f2cf94;     /* подсветка текста на чёрной кисти, контраст ≈ 14:1 */
+  --color-plate-day: #4b463a;
+  --color-ribbon: #f1e9d4;        /* лента пагинации */
+  --color-footer-box: rgb(126 120 100 / 0.16);
+  --color-footer-text: #2f2c22;
+  --color-footer-link: #2f2c22;
 
   /* Шрифты */
   --font-body: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
-  --font-heading: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, 'Times New Roman', 'DejaVu Serif', serif;
+  --font-heading: var(--font-body);
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --font-weight-normal: 400;
   --font-weight-bold: 700;
 
   /* Размеры текста (основной — 17px) */
-  --text-xs: 0.875rem;
+  --text-xs: 0.9375rem;
   --text-sm: 0.9375rem;
   --text-base: 1.0625rem;
   --text-lg: 1.1875rem;
-  --text-xl: clamp(1.3rem, 1.15rem + 0.8vw, 1.6rem);
-  --text-2xl: clamp(1.6rem, 1.3rem + 1.5vw, 2.2rem);
+  --text-xl: 1.25rem;             /* заголовок записи в ленте ≈ 20px, как на старом сайте */
+  --text-2xl: clamp(1.5rem, 1.25rem + 1.2vw, 1.9rem);
+  --text-site: clamp(1.45rem, 1rem + 2.2vw, 2.1875rem);  /* «Байкальская Федерация Кендо»: до 35px */
   --leading-body: 1.65;
   --leading-heading: 1.25;
 
@@ -57,24 +60,27 @@
   --space-7: 3rem;
   --space-8: 4.5rem;
 
-  /* Геометрия */
-  --container-width: 59.375rem;   /* 950px — как в старой теме */
+  /* Геометрия: плашка даты 64 + лист 674 + зазор 8 + сайдбар 216 */
+  --plate-width: 4rem;
+  --content-width: 42.125rem;     /* 674px */
   --sidebar-width: 13.5rem;       /* 216px */
+  --container-width: calc(var(--plate-width) + var(--content-width) + 0.5rem + var(--sidebar-width));
   --prose-width: 100%;
   --gutter: 1rem;
   --radius-sm: 0.1875rem;
-  --radius: 0.1875rem;            /* 3px из tokens.json */
-  --radius-lg: 0.3125rem;         /* 5px */
-  --header-height: 4rem;
-  --shadow-card: 0 1px 2px rgb(60 45 15 / 0.12);
+  --radius: 0.25rem;
+  --radius-lg: 0.5rem;
+  --shadow-card: 0 1px 3px rgb(60 45 15 / 0.14);
   --cover-ratio: 16 / 9;
 
-  /* Текстура бумаги (из старой темы, 4 КБ) */
+  /* Картинки оформления */
   --bg-paper: url('/theme/paper.jpg');
 }
 
+@media (max-width: 47.99em) {
+  :root { --text-sm: 1rem; --text-xs: 1rem; }
+}
+
 @media (min-width: 48em) {
-  :root {
-    --gutter: 1.5rem;
-  }
+  :root { --gutter: 1.5rem; }
 }

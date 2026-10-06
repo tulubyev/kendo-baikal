@@ -22,12 +22,12 @@ const { title, description, image, crumbs = [], hideHeading = false } = Astro.pr
       {
         !hideHeading && (
           <header class="head">
-            <h1>{title}</h1>
+            <h1 data-pagefind-meta="title">{title}</h1>
               </header>
         )
       }
       {image && !hideHeading && <Cover src={image} eager class="hero" />}
-      <div class="prose">
+      <div class="prose" data-pagefind-body>
         <slot />
       </div>
     </article>

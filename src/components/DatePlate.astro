@@ -1,0 +1,9 @@
+---
+import { dateParts, isoDate } from '../lib/date';
+
+interface Props { date: Date }
+const { date } = Astro.props;
+const { day, month, year } = dateParts(date);
+---
+
+<time class="plate" datetime={isoDate(date)}><span class="d">{day}</span> <span class="m">{month}</span> <span class="y">{year}</span></time>
