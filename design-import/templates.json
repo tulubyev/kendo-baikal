@@ -1,0 +1,274 @@
+[
+  {
+    "theme": "ink-and-wash",
+    "file": "404.php",
+    "kind": "php",
+    "includes": [
+      "include:header",
+      "include:sidebar",
+      "include:footer"
+    ],
+    "slots": [],
+    "outline": [
+      "⟨include:header⟩",
+      "<div.narrowcolumn#content>",
+      "  <div.content_top.conleft>",
+      "  <div.content_foot.conleft>",
+      "⟨include:sidebar⟩",
+      "⟨include:footer⟩"
+    ]
+  },
+  {
+    "theme": "ink-and-wash",
+    "file": "archive.php",
+    "kind": "php",
+    "includes": [
+      "include:header",
+      "include:sidebar",
+      "include:footer"
+    ],
+    "slots": [
+      "loop",
+      "date",
+      "title",
+      "taxonomy",
+      "content"
+    ],
+    "outline": [
+      "⟨include:header⟩",
+      "<div.narrowcolumn#content>",
+      "  <div.content_top.conleft>",
+      "  ⟨loop⟩",
+      "  ⟨date⟩",
+      "  <h2.pagetitle>",
+      "  ⟨loop⟩",
+      "  <h2>",
+      "    ⟨title⟩",
+      "  <div.post_intro>",
+      "    ⟨taxonomy⟩",
+      "    ⟨taxonomy⟩",
+      "  <div.content_date>",
+      "    <div.datebg>",
+      "      ⟨date⟩",
+      "      ⟨date⟩",
+      "      ⟨date⟩",
+      "  <div.comments>",
+      "  <div.entry>",
+      "    ⟨content⟩",
+      "  <div.nofound>",
+      "  <div.content_foot.conleft>",
+      "⟨include:sidebar⟩",
+      "⟨include:footer⟩"
+    ]
+  },
+  {
+    "theme": "ink-and-wash",
+    "file": "footer.php",
+    "kind": "php",
+    "includes": [],
+    "slots": [],
+    "outline": [
+      "<div.clear#footer>",
+      "  <div.wrap>"
+    ]
+  },
+  {
+    "theme": "ink-and-wash",
+    "file": "header.php",
+    "kind": "php",
+    "includes": [],
+    "slots": [
+      "site-info"
+    ],
+    "outline": [
+      "<div#fullwrapper>",
+      "  <div.wrap>",
+      "    <div.header>",
+      "      <div.logo>",
+      "        ⟨site-info⟩",
+      "        ⟨site-info⟩",
+      "      <ul.nav>",
+      "  <div.wrap>"
+    ]
+  },
+  {
+    "theme": "ink-and-wash",
+    "file": "index.php",
+    "kind": "php",
+    "includes": [
+      "include:header",
+      "include:sidebar",
+      "include:footer"
+    ],
+    "slots": [
+      "loop",
+      "title",
+      "taxonomy",
+      "date",
+      "content"
+    ],
+    "outline": [
+      "⟨include:header⟩",
+      "<div#content>",
+      "  <div.content_top.conleft>",
+      "  ⟨loop⟩",
+      "  ⟨loop⟩",
+      "  <div#post->",
+      "    <h2>",
+      "      ⟨title⟩",
+      "    <div.post_intro>",
+      "      ⟨taxonomy⟩",
+      "      ⟨taxonomy⟩",
+      "    <div.content_date>",
+      "      <div.datebg>",
+      "        ⟨date⟩",
+      "        ⟨date⟩",
+      "        ⟨date⟩",
+      "    <div.comments>",
+      "    <div.entry>",
+      "      ⟨content⟩",
+      "  <div.nofound>",
+      "  <div.content_foot.conleft>",
+      "⟨include:sidebar⟩",
+      "⟨include:footer⟩"
+    ]
+  },
+  {
+    "theme": "ink-and-wash",
+    "file": "page.php",
+    "kind": "php",
+    "includes": [
+      "include:header",
+      "include:sidebar",
+      "include:footer"
+    ],
+    "slots": [
+      "loop",
+      "title",
+      "content",
+      "date",
+      "comments"
+    ],
+    "outline": [
+      "⟨include:header⟩",
+      "<div.narrowcolumn#content>",
+      "  <div.content_top.conleft>",
+      "  ⟨loop⟩",
+      "  <div.post#post->",
+      "    <h2>",
+      "      ⟨title⟩",
+      "    <div.entry>",
+      "      ⟨content⟩",
+      "    <div.content_date>",
+      "      <div.datebg>",
+      "        ⟨date⟩",
+      "        ⟨date⟩",
+      "        ⟨date⟩",
+      "    <div.pageedit>",
+      "  ⟨comments⟩",
+      "  <div.content_foot.conleft>",
+      "⟨include:sidebar⟩",
+      "⟨include:footer⟩"
+    ]
+  },
+  {
+    "theme": "ink-and-wash",
+    "file": "search.php",
+    "kind": "php",
+    "includes": [
+      "include:header",
+      "include:sidebar",
+      "include:footer"
+    ],
+    "slots": [
+      "loop",
+      "title",
+      "taxonomy",
+      "date",
+      "content"
+    ],
+    "outline": [
+      "⟨include:header⟩",
+      "<div.narrowcolumn#content>",
+      "  <div.content_top.conleft>",
+      "  ⟨loop⟩",
+      "  <h2.pagetitle>",
+      "  ⟨loop⟩",
+      "  <h2>",
+      "    ⟨title⟩",
+      "  <div.post_intro>",
+      "    ⟨taxonomy⟩",
+      "    ⟨taxonomy⟩",
+      "  <div.content_date>",
+      "    <div.datebg>",
+      "      ⟨date⟩",
+      "      ⟨date⟩",
+      "      ⟨date⟩",
+      "  <div.comments>",
+      "  <div.entry>",
+      "    ⟨content⟩",
+      "  <div.nofound>",
+      "  <div.content_foot.conleft>",
+      "⟨include:sidebar⟩",
+      "⟨include:footer⟩"
+    ]
+  },
+  {
+    "theme": "ink-and-wash",
+    "file": "sidebar.php",
+    "kind": "php",
+    "includes": [],
+    "slots": [
+      "site-info"
+    ],
+    "outline": [
+      "<div#sidebar>",
+      "  <div#search>",
+      "    <form#searchform>",
+      "  <div.clear>",
+      "  <ul>"
+    ]
+  },
+  {
+    "theme": "ink-and-wash",
+    "file": "single.php",
+    "kind": "php",
+    "includes": [
+      "include:header",
+      "include:sidebar",
+      "include:footer"
+    ],
+    "slots": [
+      "loop",
+      "title",
+      "taxonomy",
+      "date",
+      "content",
+      "comments"
+    ],
+    "outline": [
+      "⟨include:header⟩",
+      "<div.widecolumn#content>",
+      "  <div.content_top.conleft>",
+      "  ⟨loop⟩",
+      "  <div#post->",
+      "    <h2>",
+      "      ⟨title⟩",
+      "    <div.post_intro>",
+      "      ⟨taxonomy⟩",
+      "      ⟨taxonomy⟩",
+      "    <div.content_date>",
+      "      <div.datebg>",
+      "        ⟨date⟩",
+      "        ⟨date⟩",
+      "        ⟨date⟩",
+      "    <div.comments>",
+      "    <div.entry>",
+      "      ⟨content⟩",
+      "  ⟨comments⟩",
+      "  <div.content_foot.conleft>",
+      "⟨include:sidebar⟩",
+      "⟨include:footer⟩"
+    ]
+  }
+]
