@@ -1,0 +1,15 @@
+{
+  "name": "kendo-wp-export",
+  "version": "1.0.0",
+  "description": "Локальный экспорт WordPress (SQL-дамп + wp-content) → Markdown для Astro",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "bin": { "kendo-wp-export": "bin/export.mjs" },
+  "scripts": {
+    "export": "node bin/export.mjs",
+    "test": "node --test test/*.test.mjs",
+    "fixture": "node test/make-fixture.mjs .fixture"
+  },
+  "optionalDependencies": {}
+}
