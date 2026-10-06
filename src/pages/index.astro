@@ -1,0 +1,45 @@
+---
+import { getEntry, render } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Cover from '../components/Cover.astro';
+import PostCard from '../components/PostCard.astro';
+import { getPosts } from '../lib/content';
+import { SITE } from '../site.config';
+
+const home = await getEntry('pages', 'index');
+if (!home || home.data.draft) throw new Error('Нужен src/content/pages/index.md (главная страница)');
+const { Content } = await render(home);
+const latest = (await getPosts()).slice(0, SITE.homePosts);
+const { title, description, image } = home.data;
+---
+
+<Base title={SITE.name} description={description}>
+  <section class="container section intro">
+    <h1>{title}</h1>
+    {description && <p class="lead">{description}</p>}
+    {image && <Cover src={image} eager class="hero" />}
+    <div class="prose"><Content /></div>
+  </section>
+
+  {
+    latest.length > 0 && (
+      <section class="container section" aria-labelledby="latest">
+        <div class="row">
+          <h2 id="latest">Последние новости</h2>
+          <a href="/news/">Все новости →</a>
+        </div>
+        <div class="cards">
+          {latest.map((post) => <PostCard post={post} />)}
+        </div>
+      </section>
+    )
+  }
+</Base>
+
+<style>
+  .intro .lead { max-width: var(--prose-width); }
+  :global(.hero) { margin-block: var(--space-5) var(--space-6); }
+  .row { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap; margin-bottom: var(--space-4); }
+  .row h2 { margin: 0; }
+  .cards { display: grid; gap: var(--space-5); grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); }
+</style>

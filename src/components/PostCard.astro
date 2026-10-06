@@ -1,0 +1,43 @@
+---
+import Cover from './Cover.astro';
+import { formatDate, isoDate } from '../lib/date';
+import { postUrl, type Post } from '../lib/content';
+
+interface Props { post: Post }
+const { post } = Astro.props;
+const { title, description, date, category, cover } = post.data;
+const href = postUrl(post.id);
+---
+
+<article class="card">
+  {cover && <Cover src={cover} />}
+  <div class="body">
+    <p class="meta">
+      <time datetime={isoDate(date)}>{formatDate(date)}</time>
+      {category && <span> · {category}</span>}
+    </p>
+    <h3><a href={href}>{title}</a></h3>
+    {description && <p class="desc">{description}</p>}
+  </div>
+</article>
+
+<style>
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    position: relative;
+  }
+  .meta { margin: 0 0 var(--space-1); }
+  h3 { margin: 0 0 var(--space-2); }
+  h3 a { color: var(--color-text); text-decoration: none; }
+  /* вся карточка кликабельна, ссылка одна — удобно для скринридеров */
+  h3 a::after { content: ''; position: absolute; inset: 0; border-radius: var(--radius-lg); }
+  h3 a:hover { color: var(--color-accent); }
+  .desc { margin: 0; color: var(--color-text-muted); }
+</style>
