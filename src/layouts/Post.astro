@@ -1,0 +1,52 @@
+---
+import Base from './Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import Cover from '../components/Cover.astro';
+import { formatDate, isoDate } from '../lib/date';
+import type { Post } from '../lib/content';
+
+interface Props { post: Post }
+const { post } = Astro.props;
+const { title, description, date, updated, category, tags, cover } = post.data;
+const crumbs = [{ title: 'Главная', href: '/' }, { title: 'Новости', href: '/news/' }, { title }];
+---
+
+<Base title={title} description={description} image={cover} type="article" publishedTime={date} modifiedTime={updated}>
+  <div class="container section">
+    <Breadcrumbs items={crumbs} />
+    <article>
+      <header class="head">
+        <p class="meta">
+          <time datetime={isoDate(date)}>{formatDate(date)}</time>
+          {category && <span> · {category}</span>}
+          {updated && <span> · обновлено <time datetime={isoDate(updated)}>{formatDate(updated)}</time></span>}
+        </p>
+        <h1>{title}</h1>
+        {description && <p class="lead">{description}</p>}
+      </header>
+      {cover && <Cover src={cover} eager class="hero" />}
+      <div class="prose">
+        <slot />
+      </div>
+      {
+        tags.length > 0 && (
+          <ul class="tags" aria-label="Теги">
+            {tags.map((t) => <li>#{t}</li>)}
+          </ul>
+        )
+      }
+      <p class="back"><a href="/news/">← Все новости</a></p>
+    </article>
+  </div>
+</Base>
+
+<style>
+  .head { max-width: var(--prose-width); margin-bottom: var(--space-5); }
+  .head .meta { margin: 0 0 var(--space-2); }
+  .head h1 { margin-bottom: var(--space-3); }
+  .head .lead { margin: 0; }
+  :global(.hero) { margin-bottom: var(--space-6); }
+  .tags { display: flex; flex-wrap: wrap; gap: var(--space-2); list-style: none; padding: 0; margin: var(--space-5) 0 0; }
+  .tags li { padding: var(--space-1) var(--space-3); background: var(--color-surface); border-radius: var(--radius); font-size: var(--text-sm); color: var(--color-text-muted); }
+  .back { margin-top: var(--space-6); }
+</style>

@@ -1,0 +1,66 @@
+/*
+ * Дизайн-токены. ВСЕ визуальные параметры сайта живут здесь.
+ * Значения временные, нейтральные — при переносе дизайна (design-import/tokens.json)
+ * меняются только этот файл и подключение шрифтов в Base.astro.
+ */
+:root {
+  /* Цвета */
+  --color-bg: #ffffff;
+  --color-surface: #f4f5f7;
+  --color-text: #1b1f24;
+  --color-text-muted: #5a6370;
+  --color-border: #d9dde3;
+  --color-accent: #b3222e;
+  --color-accent-hover: #8f1a24;
+  --color-on-accent: #ffffff;
+  --color-link: #a01c28;
+  --color-focus: #1a5fd0;
+  --color-header-bg: #ffffff;
+  --color-footer-bg: #1b1f24;
+  --color-footer-text: #dfe3e8;
+  --color-footer-link: #ffffff;
+
+  /* Шрифты */
+  --font-body: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  --font-heading: var(--font-body);
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-weight-normal: 400;
+  --font-weight-bold: 700;
+
+  /* Размеры текста */
+  --text-xs: 0.8125rem;
+  --text-sm: 0.9375rem;
+  --text-base: 1.0625rem;
+  --text-lg: 1.25rem;
+  --text-xl: clamp(1.4rem, 1.2rem + 1vw, 1.75rem);
+  --text-2xl: clamp(1.75rem, 1.4rem + 1.8vw, 2.5rem);
+  --leading-body: 1.65;
+  --leading-heading: 1.2;
+
+  /* Отступы */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4.5rem;
+
+  /* Геометрия */
+  --container-width: 72rem;
+  --prose-width: 44rem;
+  --gutter: 1rem;
+  --radius-sm: 0.25rem;
+  --radius: 0.5rem;
+  --radius-lg: 0.875rem;
+  --header-height: 4rem;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.06), 0 2px 8px rgb(0 0 0 / 0.04);
+  --cover-ratio: 16 / 9;
+}
+
+@media (min-width: 48em) {
+  :root {
+    --gutter: 1.5rem;
+  }
+}

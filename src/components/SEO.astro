@@ -1,0 +1,66 @@
+---
+import { SITE } from '../site.config';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  type?: 'website' | 'article';
+  publishedTime?: Date;
+  modifiedTime?: Date;
+  noindex?: boolean;
+}
+
+const { title, description = SITE.description, image, type = 'website', publishedTime, modifiedTime, noindex = false } = Astro.props;
+
+const fullTitle = title && title !== SITE.name ? `${title} — ${SITE.shortName}` : SITE.name;
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const ogImage = new URL(image ?? SITE.ogImage, Astro.site).href;
+
+const organization = {
+  '@type': 'Organization',
+  name: SITE.name,
+  url: SITE.url,
+  logo: new URL(SITE.logo, Astro.site).href,
+  ...(SITE.contacts.email ? { email: SITE.contacts.email } : {}),
+  sameAs: SITE.social.filter((s) => s.url).map((s) => s.url),
+};
+
+const jsonLd =
+  type === 'article'
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: title,
+        description,
+        image: [ogImage],
+        datePublished: publishedTime?.toISOString(),
+        dateModified: (modifiedTime ?? publishedTime)?.toISOString(),
+        mainEntityOfPage: canonical,
+        author: { '@type': 'Organization', name: SITE.name },
+        publisher: organization,
+      }
+    : { '@context': 'https://schema.org', ...organization };
+---
+
+<title>{fullTitle}</title>
+<meta name="description" content={description} />
+{!noindex && <link rel="canonical" href={canonical} />}
+{noindex && <meta name="robots" content="noindex" />}
+
+<meta property="og:site_name" content={SITE.name} />
+<meta property="og:locale" content={SITE.locale} />
+<meta property="og:type" content={type} />
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={ogImage} />
+{type === 'article' && publishedTime && <meta property="article:published_time" content={publishedTime.toISOString()} />}
+{type === 'article' && modifiedTime && <meta property="article:modified_time" content={modifiedTime.toISOString()} />}
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={fullTitle} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={ogImage} />
+
+<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />

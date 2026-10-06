@@ -1,0 +1,35 @@
+---
+// Обложка/картинка оформления. Файлы лежат в public/uploads/ (пишет CMS), ссылка — /uploads/...
+interface Props {
+  src: string;
+  alt?: string;
+  width?: number;
+  height?: number;
+  eager?: boolean;
+  class?: string;
+}
+const { src, alt = '', width = 1280, height = 720, eager = false, class: className } = Astro.props;
+---
+
+<img
+  class:list={['cover', className]}
+  src={src}
+  alt={alt}
+  width={width}
+  height={height}
+  loading={eager ? 'eager' : 'lazy'}
+  decoding="async"
+  fetchpriority={eager ? 'high' : undefined}
+/>
+
+<style>
+  .cover {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: var(--cover-ratio);
+    object-fit: cover;
+    border-radius: var(--radius);
+    background: var(--color-surface);
+  }
+</style>

@@ -1,0 +1,33 @@
+---
+import type { GetStaticPaths } from 'astro';
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import PostCard from '../../components/PostCard.astro';
+import Pagination from '../../components/Pagination.astro';
+import { getPosts } from '../../lib/content';
+import { SITE } from '../../site.config';
+
+export const getStaticPaths = (async ({ paginate }) => {
+  return paginate(await getPosts(), { pageSize: SITE.postsPerPage });
+}) satisfies GetStaticPaths;
+
+const { page } = Astro.props;
+const href = (n: number) => (n === 1 ? '/news/' : `/news/${n}/`);
+const title = page.currentPage > 1 ? `Новости — страница ${page.currentPage}` : 'Новости';
+---
+
+<Base title={title} description={`Новости клуба «${SITE.name}»`}>
+  <div class="container section">
+    <Breadcrumbs items={[{ title: 'Главная', href: '/' }, { title: 'Новости' }]} />
+    <h1>Новости</h1>
+    {page.data.length === 0 && <p>Пока новостей нет.</p>}
+    <div class="cards">
+      {page.data.map((post) => <PostCard post={post} />)}
+    </div>
+    <Pagination current={page.currentPage} total={page.lastPage} href={href} />
+  </div>
+</Base>
+
+<style>
+  .cards { display: grid; gap: var(--space-5); grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); }
+</style>
