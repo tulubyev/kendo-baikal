@@ -1,0 +1,33 @@
+---
+import { SITE } from '../site.config';
+const { contacts, social } = SITE;
+const links = social.filter((s) => s.url);
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="box">
+      <p class="name">© {SITE.name}, {SITE.foundedYear}–{year}</p>
+      {contacts.address && <p>{contacts.address}</p>}
+      {contacts.phone && <p><a href={`tel:${contacts.phone.replace(/[^+\d]/g, '')}`}>{contacts.phone}</a></p>}
+      {contacts.email && <p><a href={`mailto:${contacts.email}`}>{contacts.email}</a></p>}
+      <ul aria-label="Дополнительные ссылки">
+        <li><a href="/kak-nas-nayti/">Контакты и расписание</a></li>
+        {links.map((s) => <li><a href={s.url} rel="noopener" target="_blank">{s.title}</a></li>)}
+        <li><a href="/rss.xml">RSS</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer { margin-top: var(--space-6); padding: var(--space-4) 0 4.5rem; background: url('/theme/footbg.webp') center bottom / auto 95px no-repeat; color: var(--color-footer-text); font-size: var(--text-sm); }
+  .site-footer a { color: var(--color-footer-link); }
+  .box { max-width: var(--content-width); padding: var(--space-3) var(--space-5); background: var(--color-footer-box); border-radius: var(--radius-lg); }
+  @media (min-width: 62em) { .box { margin-left: var(--plate-width); } }
+  p { margin: 0 0 var(--space-1); }
+  .name { font-weight: var(--font-weight-bold); }
+  ul { list-style: none; margin: var(--space-2) 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); }
+  a { display: inline-block; padding-block: 0.15rem; }
+</style>

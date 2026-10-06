@@ -1,0 +1,4 @@
+# Файлы, на которые ссылается контент, но которых нет в экспорте (лежали в /im/ старого сайта вне wp-content/uploads).
+# Владельцу: положить файлы в public/im/ (или public/uploads/) и удалить строки отсюда. См. docs/CONTENT-TODO.md.
+/im/kendo_manual_rus.pdf
+/im/obrz.doc

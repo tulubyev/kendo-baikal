@@ -1,13 +1,9 @@
 ---
 title: "Фото"
 menu: true
-order: 140
+order: 145
 ---
 
-<!-- TODO(wp-export): шорткод [vkalbum] не перенесён -->
+Фотографии и видео с тренировок и турниров — в группе клуба ВКонтакте: [vk.com/kendo_baikal](https://vk.com/kendo_baikal).
 
-<!-- TODO(wp-export): шорткод [vkalbum] не перенесён -->
-
-<!-- TODO(wp-export): шорткод [vkalbum] не перенесён -->
-
-<!-- TODO(wp-export): шорткод [vkalbum] не перенесён -->
+<!-- TODO(wp-export): раньше здесь был шорткод [vkalbum] (альбомы ВК); альбомы не перенесены, нужна ручная вставка или ссылки на альбомы -->

@@ -1,0 +1,13 @@
+.git
+.github
+node_modules
+dist
+.astro
+export-private
+tools
+docs
+*.md
+!README.md
+.env*
+*.sql
+*.sql.gz

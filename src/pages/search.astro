@@ -1,0 +1,30 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Поиск" description="Поиск по сайту" noindex>
+  <div class="panel" data-pagefind-ignore>
+    <h1>Поиск</h1>
+    <form class="form" action="/search/" method="get" role="search">
+      <label class="visually-hidden" for="q">Запрос</label>
+      <input id="q" type="search" name="q" autocomplete="off" placeholder="Что искать?" required />
+      <button type="submit">Найти</button>
+    </form>
+    <p id="status" class="meta" role="status">Введите запрос. Для поиска нужен включённый JavaScript.</p>
+    <ol id="results" class="results"></ol>
+  </div>
+</Base>
+
+<script is:inline type="module" src="/search.js"></script>
+
+<style>
+  .form { display: flex; gap: var(--space-2); margin-bottom: var(--space-3); }
+  input { flex: 1 1 auto; min-width: 0; min-height: 2.75rem; padding: 0 var(--space-3); font: inherit; border: 1px solid #b9b09a; border-radius: var(--radius); background: #fff; color: #000; }
+  button { min-height: 2.75rem; padding: 0 var(--space-5); font: inherit; font-weight: var(--font-weight-bold); color: var(--color-nav-text); background: var(--color-ink); border: 0; border-radius: var(--radius-lg); cursor: pointer; }
+  button:hover { color: var(--color-nav-hover); }
+  .results { list-style: none; margin: 0; padding: 0; }
+  .results :global(li) { padding-block: var(--space-3); border-bottom: 1px dashed var(--color-dash); }
+  .results :global(a) { font-size: var(--text-lg); font-weight: var(--font-weight-bold); }
+  .results :global(p) { margin: var(--space-1) 0 0; color: var(--color-text-muted); }
+  .results :global(mark) { background: #f2e2a6; color: inherit; }
+</style>
