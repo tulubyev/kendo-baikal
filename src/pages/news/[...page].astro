@@ -8,11 +8,13 @@ import { getPosts } from '../../lib/content';
 import { SITE } from '../../site.config';
 
 export const getStaticPaths = (async ({ paginate }) => {
-  return paginate(await getPosts(), { pageSize: SITE.postsPerPage });
+  // Страницы ленты — /news/page/N/: адрес /news/N/ занят записями с числовым slug (например, /news/22/).
+  const pages = paginate(await getPosts(), { pageSize: SITE.postsPerPage });
+  return pages.map((p) => ({ ...p, params: { page: p.props.page.currentPage === 1 ? undefined : `page/${p.props.page.currentPage}` } }));
 }) satisfies GetStaticPaths;
 
 const { page } = Astro.props;
-const href = (n: number) => (n === 1 ? '/news/' : `/news/${n}/`);
+const href = (n: number) => (n === 1 ? '/news/' : `/news/page/${n}/`);
 const title = page.currentPage > 1 ? `Новости — страница ${page.currentPage}` : 'Новости';
 ---
 

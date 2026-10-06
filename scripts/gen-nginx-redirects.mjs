@@ -65,6 +65,14 @@ if (existsSync(inArg)) {
       if (entries.has(from)) fail(`строка ${line}: дубликат from "${from}"`);
       entries.set(from, { to, status });
     });
+    // Вариант без завершающего «/» (/старый-адрес → цель): иначе такой запрос не совпадёт с ключом map.
+    // Явные записи из CSV имеют приоритет; `/?p=1` и подобные (с query) не трогаем.
+    for (const [from, e] of [...entries]) {
+      if (from.length > 1 && from.endsWith('/') && !from.includes('?')) {
+        const bare = from.slice(0, -1);
+        if (!entries.has(bare) && bare !== e.to) entries.set(bare, { ...e });
+      }
+    }
   }
 }
 

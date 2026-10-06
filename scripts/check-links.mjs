@@ -14,6 +14,14 @@ async function* walk(dir) {
   }
 }
 
+// Известные недостающие файлы (ждут от владельца) — scripts/check-links.allow, по одному пути в строке, # — комментарий.
+const allow = new Set(
+  await readFile(new URL('./check-links.allow', import.meta.url), 'utf8').then(
+    (t) => t.split(/\r?\n/).map((l) => l.replace(/#.*/, '').trim()).filter(Boolean),
+    () => [],
+  ),
+);
+
 const exists = async (p) => stat(p).then((s) => s.isFile(), () => false);
 
 /** URL → файл в dist (как это сделает nginx: /a/ → /a/index.html, /a → /a или /a/index.html) */
@@ -56,6 +64,7 @@ for await (const file of walk(dist)) {
     if (/^(https?:)?\/\//i.test(ref)) continue; // внешние не проверяем
     const url = new URL(ref, `http://x${pageUrl}`);
     checked++;
+    if (allow.has(url.pathname)) continue;
     if (!(await resolves(url.pathname))) errors.push(`${pageUrl}  →  ${ref}`);
   }
 }
