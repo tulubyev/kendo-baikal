@@ -1,0 +1,96 @@
+{
+  "name": "Меню",
+  "locations": [],
+  "items": [
+    {
+      "title": "Главная",
+      "href": "/",
+      "kind": "internal",
+      "children": []
+    },
+    {
+      "title": "Форум",
+      "href": "http://forum.kendo-baikal.ru/",
+      "kind": "external",
+      "children": []
+    },
+    {
+      "title": "О нас",
+      "href": "/o-nas/",
+      "kind": "page",
+      "children": []
+    },
+    {
+      "title": "Противопоказания",
+      "href": "/600-2/",
+      "kind": "page",
+      "children": []
+    },
+    {
+      "title": "Я хочу, но…",
+      "href": "/ya-khochu-no/",
+      "kind": "page",
+      "children": []
+    },
+    {
+      "title": "Дополнительно",
+      "href": "/poleznye-materialy/",
+      "kind": "page",
+      "children": []
+    },
+    {
+      "title": "Календарь",
+      "href": "/poleznye-materialy/kalendar/",
+      "kind": "page",
+      "children": []
+    },
+    {
+      "title": "(запись не опубликована)",
+      "href": "",
+      "kind": "unresolved",
+      "children": []
+    },
+    {
+      "title": "Статьи",
+      "href": "/poleznye-materialy/stati/",
+      "kind": "page",
+      "children": []
+    },
+    {
+      "title": "Юмор",
+      "href": "/poleznye-materialy/yumor/",
+      "kind": "page",
+      "children": []
+    },
+    {
+      "title": "Контакты",
+      "href": "/kak-nas-nayti/",
+      "kind": "page",
+      "children": []
+    },
+    {
+      "title": "О кендо…",
+      "href": "/about/",
+      "kind": "page",
+      "children": []
+    },
+    {
+      "title": "Дети в кендо",
+      "href": "/about/805-2/",
+      "kind": "page",
+      "children": []
+    },
+    {
+      "title": "Фото",
+      "href": "/foto/",
+      "kind": "page",
+      "children": []
+    },
+    {
+      "title": "Ярмарка",
+      "href": "/yarmanka/",
+      "kind": "page",
+      "children": []
+    }
+  ]
+}

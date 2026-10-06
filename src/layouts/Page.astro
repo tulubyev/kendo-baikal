@@ -1,0 +1,41 @@
+---
+import Base from './Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import Cover from '../components/Cover.astro';
+import type { Crumb } from '../lib/content';
+
+interface Props {
+  title: string;
+  description?: string;
+  image?: string;
+  crumbs?: Crumb[];
+  /** На главной h1 и обложка выводятся самой страницей */
+  hideHeading?: boolean;
+}
+const { title, description, image, crumbs = [], hideHeading = false } = Astro.props;
+---
+
+<Base title={title} description={description} image={image}>
+  <div class="panel">
+    <Breadcrumbs items={crumbs} />
+    <article>
+      {
+        !hideHeading && (
+          <header class="head">
+            <h1 data-pagefind-meta="title">{title}</h1>
+              </header>
+        )
+      }
+      {image && !hideHeading && <Cover src={image} eager class="hero" />}
+      <div class="prose" data-pagefind-body>
+        <slot />
+      </div>
+    </article>
+  </div>
+</Base>
+
+<style>
+  .head { max-width: var(--prose-width); margin-bottom: var(--space-5); }
+  .head h1 { margin-bottom: var(--space-3); }
+  :global(.hero) { margin-bottom: var(--space-6); }
+</style>

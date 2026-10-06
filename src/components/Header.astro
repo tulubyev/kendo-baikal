@@ -1,0 +1,79 @@
+---
+import { SITE } from '../site.config';
+import { getFlatMenu } from '../lib/content';
+
+const menu = await getFlatMenu();
+const path = Astro.url.pathname;
+const external = (href: string) => /^https?:\/\//.test(href);
+---
+
+<header class="site-header">
+  <div class="inner">
+    <p class="site-title"><a href="/">{SITE.name}</a></p>
+
+    <input type="checkbox" id="nav-toggle" class="nav-toggle visually-hidden" aria-label="Показать или скрыть меню" />
+    <label for="nav-toggle" class="burger"><span>Меню</span></label>
+
+    <nav class="nav" aria-label="Главное меню">
+      <ul>
+        {
+          menu.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                aria-current={path === item.href ? 'page' : undefined}
+                rel={external(item.href) ? 'noopener' : undefined}
+              >
+                {item.title}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .site-header { position: relative; z-index: 5; }
+  .inner { width: 100%; max-width: calc(var(--container-width) + 2 * var(--gutter)); margin-inline: auto; padding: var(--space-5) var(--gutter) var(--space-3); }
+  .site-title { margin: 0 0 var(--space-4); font-size: var(--text-site); font-weight: var(--font-weight-bold); line-height: 1.2; }
+  .site-title a { color: #000; text-decoration: none; }
+
+  /* Мобильное меню: чекбокс + CSS, без JS */
+  .burger {
+    display: inline-block; cursor: pointer; min-height: 2.75rem; line-height: 2.75rem; padding: 0 var(--space-5);
+    background: var(--color-ink); color: var(--color-nav-text); border-radius: var(--radius-lg);
+    font-size: var(--text-base); font-weight: var(--font-weight-bold);
+  }
+  .burger::after { content: ' ▾'; }
+  .nav-toggle:checked + .burger::after { content: ' ▴'; }
+  .nav-toggle:focus-visible + .burger { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+  .nav { display: none; margin-top: var(--space-2); }
+  .nav-toggle:checked ~ .nav { display: block; }
+  ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+  .nav a {
+    display: block; min-height: 2.75rem; padding: 0.55rem var(--space-4);
+    background: var(--color-ink); color: var(--color-nav-text); border-radius: var(--radius-lg);
+    font-size: var(--text-base); text-decoration: none;
+  }
+  .nav a:hover, .nav a:focus-visible { color: var(--color-nav-hover); }
+  .nav a[aria-current='page'] { color: var(--color-nav-hover); font-weight: var(--font-weight-bold); }
+
+  /* Десктоп: два ряда «кистей» (картинки старой темы + сплошная заливка посередине) */
+  @media (min-width: 62em) {
+    .inner { padding: 3rem var(--gutter) 0.75rem; }
+    .site-title { margin: 0 0 1.4rem 6.25rem; }
+    .burger { display: none; }
+    .nav, .nav-toggle:checked ~ .nav { display: block; margin: 0; }
+    ul { display: flex; flex-wrap: wrap; gap: 0.125rem 0.1rem; padding-left: 0.25rem; }
+    .nav a {
+      display: block; height: 40px; min-height: 0; padding: 0 21px 0 19px; line-height: 40px; border-radius: 0;
+      font-size: 0.875rem; letter-spacing: -0.005em; white-space: nowrap;
+      background:
+        url('/theme/abgr.webp') right center / auto 40px no-repeat,
+        url('/theme/abgl.webp') left center / auto 40px no-repeat,
+        linear-gradient(var(--color-ink), var(--color-ink)) 40px 9px / calc(100% - 68px) 25px no-repeat;
+    }
+  }
+</style>

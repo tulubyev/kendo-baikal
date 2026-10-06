@@ -1,0 +1,27 @@
+---
+import type { GetStaticPaths } from 'astro';
+import Base from '../../layouts/Base.astro';
+import PostCard from '../../components/PostCard.astro';
+import Pagination from '../../components/Pagination.astro';
+import { getPosts } from '../../lib/content';
+import { SITE } from '../../site.config';
+
+export const getStaticPaths = (async ({ paginate }) => {
+  // Страницы ленты — /news/page/N/: адрес /news/N/ занят записями с числовым slug (например, /news/22/).
+  const pages = paginate(await getPosts(), { pageSize: SITE.postsPerPage });
+  return pages.map((p) => ({ ...p, params: { page: p.props.page.currentPage === 1 ? undefined : `page/${p.props.page.currentPage}` } }));
+}) satisfies GetStaticPaths;
+
+const { page } = Astro.props;
+const href = (n: number) => (n === 1 ? '/news/' : `/news/page/${n}/`);
+const title = page.currentPage > 1 ? `Новости — страница ${page.currentPage}` : 'Новости';
+---
+
+<Base title={title} description={`Новости клуба «${SITE.name}»`}>
+  <div class="panel">
+    <h1 class="visually-hidden">{title}</h1>
+    {page.data.length === 0 && <p>Пока новостей нет.</p>}
+    {page.data.map((post, i) => <PostCard post={post} priority={i === 0} />)}
+    <Pagination current={page.currentPage} total={page.lastPage} href={href} />
+  </div>
+</Base>

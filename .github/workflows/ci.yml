@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # Пока каркас Astro (package-lock.json) не вмержен — сборочные шаги пропускаются.
+      - id: lock
+        run: echo "present=$([ -f package-lock.json ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+      - if: steps.lock.outputs.present == 'true'
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - if: steps.lock.outputs.present == 'true'
+        run: npm ci
+
+      - name: npm run verify (если скрипт есть)
+        if: steps.lock.outputs.present == 'true'
+        run: |
+          if node -e "process.exit(require('./package.json').scripts?.verify ? 0 : 1)"; then
+            npm run verify
+          else
+            echo "Скрипта verify нет — пропускаю"
+          fi
+
+      - name: Проверка генератора редиректов
+        run: node scripts/gen-nginx-redirects.mjs redirects.csv "$RUNNER_TEMP/redirects.map.conf"
+
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - id: lock
+        run: echo "present=$([ -f package-lock.json ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+      - if: steps.lock.outputs.present == 'true'
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Пробная сборка образа (без push)
+        if: steps.lock.outputs.present == 'true'
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

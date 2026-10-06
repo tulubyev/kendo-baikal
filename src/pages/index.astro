@@ -1,0 +1,39 @@
+---
+import { getEntry, render } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Cover from '../components/Cover.astro';
+import PostCard from '../components/PostCard.astro';
+import { getPosts } from '../lib/content';
+import { SITE } from '../site.config';
+
+const home = await getEntry('pages', 'index');
+if (!home || home.data.draft) throw new Error('Нужен src/content/pages/index.md (главная страница)');
+const { Content } = await render(home);
+const latest = (await getPosts()).slice(0, SITE.homePosts);
+const { title, description, image } = home.data;
+---
+
+<Base title={SITE.name} description={description}>
+  <div class="panel">
+    <section class="intro">
+      <h1>{title}</h1>
+      {image && <Cover src={image} eager class="hero" />}
+      <div class="prose"><Content /></div>
+    </section>
+  </div>
+
+  {
+    latest.length > 0 && (
+      <section class="panel" aria-labelledby="latest">
+        <h2 id="latest" class="visually-hidden">Последние новости</h2>
+        {latest.map((post, i) => <PostCard post={post} priority={i === 0} />)}
+        <p class="all"><a href="/news/">Все новости →</a></p>
+      </section>
+    )
+  }
+</Base>
+
+<style>
+  :global(.hero) { margin-block: var(--space-4); }
+  .all { margin: 0; font-weight: var(--font-weight-bold); }
+</style>

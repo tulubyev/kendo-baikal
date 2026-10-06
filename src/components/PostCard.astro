@@ -1,0 +1,56 @@
+---
+import DatePlate from './DatePlate.astro';
+import { postImage, postUrl, type Post } from '../lib/content';
+
+interface Props {
+  post: Post;
+  /** Первая картинка страницы — грузится сразу (LCP) */
+  priority?: boolean;
+}
+const { post, priority = false } = Astro.props;
+const { title, description, date, category } = post.data;
+const href = postUrl(post.id);
+const img = postImage(post);
+---
+
+<article class="entry">
+  <DatePlate date={date} />
+  <h2><a href={href}>{title}</a></h2>
+  {category && <p class="byline">Рубрика: {category}.</p>}
+  <div class="body">
+    {
+      img && (
+        <a class="thumb" href={href} tabindex="-1" aria-hidden="true">
+          <img
+            src={img.src}
+            alt=""
+            width={img.width}
+            height={img.height}
+            loading={priority ? 'eager' : 'lazy'}
+            decoding="async"
+            fetchpriority={priority ? 'high' : undefined}
+          />
+        </a>
+      )
+    }
+    {description && <p class="desc">{description}</p>}
+    <p class="more"><a href={href}>Читать далее<span class="visually-hidden">: {title}</span> →</a></p>
+  </div>
+</article>
+
+<style>
+  .entry { position: relative; padding-block: var(--space-4); background: url('/theme/comm_line.webp') center bottom / 100% 16px no-repeat; padding-bottom: var(--space-5); }
+  .entry:first-child { padding-top: 0; }
+  h2 { margin: 0 0 var(--space-1); font-size: var(--text-xl); font-weight: var(--font-weight-bold); line-height: 1.3; }
+  h2 a { color: var(--color-heading); text-decoration: none; }
+  h2 a:hover { color: var(--color-accent); text-decoration: underline; }
+  .byline { margin: 0 0 var(--space-3); padding-left: 1rem; background: url('/theme/tags.webp') no-repeat 0 0.5em; font-size: var(--text-xs); color: var(--color-text-muted); }
+  .body::after { content: ''; display: block; clear: both; }
+  .thumb { display: block; margin: 0 0 var(--space-3); }
+  .thumb img { display: block; max-width: 100%; height: auto; border: 1px solid #000; }
+  .desc { margin: 0 0 var(--space-2); }
+  .more { margin: 0; font-size: var(--text-sm); }
+  @media (min-width: 40em) {
+    .thumb { float: left; max-width: 46%; margin: 0.25rem var(--space-4) var(--space-2) 0; }
+  }
+</style>

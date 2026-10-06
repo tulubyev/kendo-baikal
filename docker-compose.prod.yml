@@ -1,0 +1,48 @@
+# Продакшен на VPS: только pull + up. Сборка — в GitHub Actions (образ в GHCR).
+# HTTP→HTTPS редирект настроен глобально на entrypoint Traefik (как у остальных проектов).
+services:
+  kendo-baikal-web:
+    image: ghcr.io/tulubyev/kendo-baikal-web:${IMAGE_TAG:-latest}
+    container_name: kendo-baikal-web
+    restart: unless-stopped
+    mem_limit: 64m
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - traefik-public
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080/healthz"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik-public
+
+      # Основной домен
+      - traefik.http.routers.kendo-baikal.rule=Host(`kendo-baikal.ru`)
+      - traefik.http.routers.kendo-baikal.entrypoints=websecure
+      - traefik.http.routers.kendo-baikal.tls.certresolver=letsencrypt
+      - traefik.http.routers.kendo-baikal.service=kendo-baikal
+      # Контейнер слушает 8080 (nginx-unprivileged), а не 80.
+      - traefik.http.services.kendo-baikal.loadbalancer.server.port=8080
+
+      # www → apex, 301 (сертификат на www тоже выпускается этим роутером)
+      - traefik.http.routers.kendo-baikal-www.rule=Host(`www.kendo-baikal.ru`)
+      - traefik.http.routers.kendo-baikal-www.entrypoints=websecure
+      - traefik.http.routers.kendo-baikal-www.tls.certresolver=letsencrypt
+      - traefik.http.routers.kendo-baikal-www.middlewares=kendo-baikal-www-redirect
+      - traefik.http.routers.kendo-baikal-www.service=kendo-baikal
+      - traefik.http.middlewares.kendo-baikal-www-redirect.redirectregex.regex=^https://www\.kendo-baikal\.ru/(.*)
+      - traefik.http.middlewares.kendo-baikal-www-redirect.redirectregex.replacement=https://kendo-baikal.ru/$${1}
+      - traefik.http.middlewares.kendo-baikal-www-redirect.redirectregex.permanent=true
+
+networks:
+  traefik-public:
+    external: true
