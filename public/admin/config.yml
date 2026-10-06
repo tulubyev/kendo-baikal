@@ -1,0 +1,123 @@
+# Sveltia CMS (формат совместим с Decap CMS). Версия CMS закреплена в index.html.
+# Контракт полей — docs/PLAN.md и src/content.config.ts: менять только согласованно.
+backend:
+  name: github
+  repo: tulubyev/kendo-baikal
+  branch: main
+
+# Прямой коммит в main (без редакционного workflow) — просто для небольшого клуба.
+publish_mode: simple
+locale: ru
+site_url: https://kendo-baikal.ru
+display_url: https://kendo-baikal.ru
+
+media_folder: public/uploads
+public_folder: /uploads
+
+# Транслитерация русских заголовков в латинский slug (имя файла).
+slug:
+  encoding: ascii
+  clean_accents: true
+  sanitize_replacement: "-"
+
+collections:
+  - name: posts
+    label: Новости (записи)
+    label_singular: Запись
+    description: Новости и объявления клуба. Публикуются по адресу /news/адрес-записи/.
+    folder: src/content/posts
+    extension: md
+    format: frontmatter
+    create: true
+    slug: "{{slug}}"
+    summary: "{{date | date('DD.MM.YYYY')}} — {{title}}"
+    sortable_fields: [date, title]
+    sort_by: date
+    fields:
+      - { name: title, label: Заголовок, widget: string, required: true }
+      - name: date
+        label: Дата публикации
+        widget: datetime
+        required: true
+        default: "{{now}}"
+        hint: Дата и время, которые увидят читатели. Можно изменить.
+      - name: updated
+        label: Дата обновления
+        widget: datetime
+        required: false
+        hint: Заполняйте, только если существенно правили запись после публикации.
+      - name: description
+        label: Краткое описание
+        widget: text
+        required: false
+        hint: 1–2 предложения для анонса и поисковиков.
+      - name: category
+        label: Рубрика
+        widget: string
+        required: false
+        hint: Например, «Соревнования» или «Семинары».
+      - name: tags
+        label: Метки
+        widget: list
+        required: false
+        default: []
+        hint: Короткие слова-метки. Нажмите «Добавить», чтобы ввести новую.
+      - name: cover
+        label: Обложка
+        widget: image
+        required: false
+        hint: Картинка для анонса записи. Загрузится в папку /uploads/.
+      - name: draft
+        label: Черновик
+        widget: boolean
+        default: false
+        required: false
+        hint: Включите, если запись ещё не готова — на сайте она не появится.
+      - { name: body, label: Текст записи, widget: markdown, required: false }
+
+  - name: pages
+    label: Страницы
+    label_singular: Страница
+    description: Обычные страницы сайта. Вложенность папок = вложенность адреса (club/history → /club/history/).
+    folder: src/content/pages
+    extension: md
+    format: frontmatter
+    create: true
+    slug: "{{slug}}"
+    nested:
+      depth: 5
+      summary: "{{title}}"
+    meta:
+      path:
+        widget: string
+        label: Адрес страницы
+        index_file: index
+    fields:
+      - { name: title, label: Заголовок, widget: string, required: true }
+      - name: description
+        label: Описание для поисковиков
+        widget: text
+        required: false
+        hint: 1–2 предложения (SEO).
+      - name: menu
+        label: Показывать в главном меню
+        widget: boolean
+        default: false
+        required: false
+      - name: order
+        label: Порядок в меню
+        widget: number
+        value_type: int
+        required: false
+        hint: Чем меньше число, тем левее пункт меню.
+      - name: image
+        label: Картинка
+        widget: image
+        required: false
+      - name: draft
+        label: Черновик
+        widget: boolean
+        default: false
+        required: false
+        hint: Включите, если страница ещё не готова — на сайте она не появится.
+      - { name: body, label: Текст страницы, widget: markdown, required: false }
