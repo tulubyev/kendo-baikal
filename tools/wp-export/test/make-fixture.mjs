@@ -9,12 +9,12 @@ export const FIXTURE_SECRETS = {
   salt: 'put your unique phrase here',
 };
 
-const q = (v) => {
+export const q = (v) => {
   if (v === null || v === undefined) return 'NULL';
   if (typeof v === 'number') return String(v);
   return "'" + String(v).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n').replace(/\r/g, '\\r').replace(/\0/g, '\\0') + "'";
 };
-const ser = (v) => {
+export const ser = (v) => {
   if (typeof v === 'string') return `s:${Buffer.byteLength(v)}:"${v}";`;
   if (typeof v === 'number') return `i:${v};`;
   if (Array.isArray(v)) return `a:${v.length}:{${v.map((x, i) => `i:${i};${ser(x)}`).join('')}}`;
@@ -24,7 +24,7 @@ const ser = (v) => {
 
 const P = 'wp_';
 
-function insert(table, cols, rows, chunk = 3) {
+export function insert(table, cols, rows, chunk = 3) {
   const out = [];
   for (let i = 0; i < rows.length; i += chunk) {
     out.push(`INSERT INTO \`${P}${table}\` (${cols.map((c) => `\`${c}\``).join(',')}) VALUES ${rows.slice(i, i + chunk).map((r) => '(' + r.map(q).join(',') + ')').join(',')};`);
@@ -32,9 +32,9 @@ function insert(table, cols, rows, chunk = 3) {
   return out.join('\n');
 }
 
-const POST_COLS = ['ID', 'post_author', 'post_date', 'post_date_gmt', 'post_content', 'post_title', 'post_excerpt', 'post_status', 'comment_status', 'ping_status', 'post_password', 'post_name', 'to_ping', 'pinged', 'post_modified', 'post_modified_gmt', 'post_content_filtered', 'post_parent', 'guid', 'menu_order', 'post_type', 'post_mime_type', 'comment_count'];
+export const POST_COLS = ['ID', 'post_author', 'post_date', 'post_date_gmt', 'post_content', 'post_title', 'post_excerpt', 'post_status', 'comment_status', 'ping_status', 'post_password', 'post_name', 'to_ping', 'pinged', 'post_modified', 'post_modified_gmt', 'post_content_filtered', 'post_parent', 'guid', 'menu_order', 'post_type', 'post_mime_type', 'comment_count'];
 
-function post(o) {
+export function post(o) {
   const d = o.date || '2021-05-01 10:00:00';
   const row = {
     ID: o.ID, post_author: 1, post_date: d, post_date_gmt: o.gmt || d, post_content: o.content ?? '', post_title: o.title ?? '', post_excerpt: o.excerpt ?? '',
@@ -45,7 +45,7 @@ function post(o) {
   return POST_COLS.map((c) => row[c]);
 }
 
-const SITE = 'https://kendo-baikal.ru';
+export const SITE = 'https://kendo-baikal.ru';
 const enc = (s) => encodeURIComponent(s).toLowerCase();
 
 export function makeFixture(dir) {

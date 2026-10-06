@@ -1,4 +1,6 @@
 import { htmlToMarkdown, embedHtml, decodeEntities } from './html2md.mjs';
+import { isNggShortcode } from './ngg.mjs';
+import { EMAIL, normalizeEmail } from './secrets.mjs';
 
 /**
  * Контент записи WordPress (классический HTML / Gutenberg / шорткоды) → Markdown.
@@ -146,6 +148,7 @@ function handleShortcode(name, a, inner, env, postId, depth) {
       return c ? '\n\n' + c + '\n\n' : undefined;
     }
     default:
+      if (env.ngg && isNggShortcode(name)) return env.ngg.render(name, a, env);
       return undefined;
   }
 }
@@ -177,14 +180,18 @@ export function contentToMarkdown(content, env, postId) {
 }
 
 export function plainText(md) {
-  return md
+  // e-mail не портим (иначе «owner-secret@x.ru» превратится в «owner secret@x.ru» и не будет опознан как адрес)
+  const emails = [];
+  const protectedMd = md.replace(EMAIL, (m) => `\u0001${emails.push(normalizeEmail(m)) - 1}\u0001`);
+  return protectedMd
     .replace(/<!--[\s\S]*?-->/g, '')
     .replace(/<[^>]+>/g, '')
     .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
     .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
     .replace(/[#>*_`~|\\-]+/g, ' ')
     .replace(/\s+/g, ' ')
-    .trim();
+    .trim()
+    .replace(/\u0001(\d+)\u0001/g, (_, i) => emails[Number(i)]);
 }
 
 export function makeDescription(md, max = 160) {

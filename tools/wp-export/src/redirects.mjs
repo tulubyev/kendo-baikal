@@ -24,8 +24,10 @@ export function buildRedirects(plan, model, media) {
   add('/feed/', '/rss.xml');
   add('/?feed=rss2', '/rss.xml');
 
-  for (const rel of [...media.files.keys()].sort()) add('/wp-content/uploads/' + encodePathStrict(rel), '/uploads/' + encodePathStrict(rel));
-  for (const a of media.aliases()) add('/wp-content/uploads/' + encodePathStrict(a.from), '/uploads/' + encodePathStrict(a.to));
+  for (const dest of [...media.files.keys()].sort()) {
+    const f = media.files.get(dest);
+    for (const old of [...f.old].sort()) add(encodePathStrict(old), '/uploads/' + encodePathStrict(dest));
+  }
 
   const csv = 'from,to,status\n' + rows.map((r) => [r.from, r.to, r.status].map(csvCell).join(',')).join('\n') + '\n';
   return { rows, csv };

@@ -5,7 +5,7 @@ function hostOf(url) {
   try { return new URL(url).host.replace(/^www\./, ''); } catch { return ''; }
 }
 
-export function buildReport({ model, plan, collected, links, mediaStats, redirects, design, shots, validation, warnings, opts }) {
+export function buildReport({ model, plan, collected, links, mediaStats, redirects, design, shots, validation, warnings, opts, remote = null, ngg = null, redaction = { total: 0, items: [] }, redactMode = 'on' }) {
   const siteName = model.options.blogname || '';
   const types = {};
   for (const p of model.posts.values()) {
@@ -58,10 +58,14 @@ export function buildReport({ model, plan, collected, links, mediaStats, redirec
       unsupportedAssets: links.stats.unsupportedAssets,
       externalCount: links.stats.external.length,
       externalHosts: Object.fromEntries(Object.entries(externalByHost).map(([h, s]) => [h, [...s].sort()])),
+      internalFuzzy: links.stats.internalFuzzy,
       mailto: links.stats.mailto,
       categoryOrTagLinksToNews: links.stats.taxonomyRedirected,
     },
     media: mediaStats,
+    remote,
+    galleries: ngg,
+    redaction: { mode: redactMode, total: redaction.total, items: redaction.items },
     drafts: plan.drafts,
     slugChanges: plan.slugChanges,
     manual,
@@ -138,10 +142,11 @@ export function renderReportMd(r) {
   h('Ссылки');
   const lk = r.links;
   L.push(`- Внутренние ссылки, переписанные на новые адреса: **${lk.internalOk}**`, `- Ссылки на рубрики/метки (ведут на /news/): ${lk.categoryOrTagLinksToNews}`, `- Внешних ссылок: ${lk.externalCount}, mailto: ${lk.mailto}`);
-  if (lk.internalBroken.length) { L.push('', '**Битые внутренние ссылки** (нужно поправить вручную):', ''); for (const b of lk.internalBroken) L.push(`- ${b.source}: ${b.url} — ${b.reason}`); }
+  if (lk.internalFuzzy?.length) { L.push('', 'Ссылки, сопоставленные не по точному адресу (проверьте, что они ведут куда нужно):', ''); for (const b of lk.internalFuzzy) L.push(`- ${b.source}: ${b.url} → \`${b.to}\` — ${b.how}`); }
+  if (lk.internalBroken.length) { L.push('', '**Битые внутренние ссылки** (в тексте оставлен абсолютный старый адрес и пометка `TODO(wp-export)` — нужно поправить вручную):', ''); for (const b of lk.internalBroken) L.push(`- ${b.source}: ${b.url} — ${b.reason}`); }
   if (lk.unsupportedAssets.length) { L.push('', '**Ссылки на файлы вне uploads** (темы/плагины/прочее):', ''); for (const b of lk.unsupportedAssets) L.push(`- ${b.source}: ${b.url}`); }
   const hosts = Object.entries(lk.externalHosts).sort((a, b) => b[1].length - a[1].length);
-  if (hosts.length) { L.push('', '**Внешние домены** (доступность не проверялась — инструмент работает без сети):', ''); for (const [host, urls] of hosts) L.push(`- ${host} — ${urls.length}`); L.push('', 'Полный список — в `report.json`.'); }
+  if (hosts.length) { L.push('', r.remote ? '**Внешние домены** (результат скачивания — в разделе «Внешние картинки»; обычные ссылки на страницы не проверялись):' : '**Внешние домены** (доступность не проверялась — инструмент работает без сети):', ''); for (const [host, urls] of hosts) L.push(`- ${host} — ${urls.length}`); L.push('', 'Полный список — в `report.json`.'); }
 
   h('Медиа');
   const m = r.media;
@@ -152,6 +157,10 @@ export function renderReportMd(r) {
     if (m.largest.length) { L.push('', 'Крупнейшие файлы: ' + m.largest.slice(0, 5).map((f) => `${f.file} (${formatBytes(f.size)})`).join(', ')); }
   }
   if (m.missing.length) { L.push('', '**Файлы, упомянутые в контенте, но не найденные:**', ''); for (const f of m.missing) L.push(`- ${f.file}${f.usedBy.length ? ` ← ${f.usedBy.join(', ')}` : ''}`); }
+
+  renderRemote(r, L, h);
+  renderGalleries(r, L, h);
+  renderRedaction(r, L, h);
 
   h('Черновики (не экспортированы, только список)');
   if (!r.drafts.length) L.push('Нет.');
@@ -192,9 +201,54 @@ export function renderReportMd(r) {
     L.push(`Просканировано файлов: ${s.scanned}. ${s.hard.length ? '🛑 **НАЙДЕНЫ СЕКРЕТЫ — НЕ КОММИТЬТЕ ВЫВОД!**' : 'Хэшей паролей, ключей wp-config и данных пользователей не найдено.'}`);
     for (const x of s.hard) L.push(`- 🛑 ${x.file}: ${x.kind}`);
     if (s.emails.length) {
-      L.push('', '⚠ **В тексте найдены e-mail адреса.** Если это публичные контакты клуба — подтвердите их флагом `--allow-email адрес`; иначе удалите из текста перед коммитом:', '');
-      for (const e of s.emails) L.push(`- ${e.file}: ${e.email}`);
+      L.push('', '⚠ **В тексте найдены e-mail адреса.** Откройте файл по указанной строке (адрес замаскирован). Если это публичный контакт клуба — подтвердите флагом `--allow-email адрес` (или `--allow-email @домен`); иначе удалите адрес из текста перед коммитом:', '');
+      for (const e of s.emails) L.push(`- ${e.file}${e.lines?.length ? `, строка ${e.lines.join(', ')}` : ''}: ${e.email}`);
     }
   }
   return L.join('\n') + '\n';
+}
+
+function renderRemote(r, L, h) {
+  const rm = r.remote;
+  const ext = Object.entries(r.links.externalHosts || {}).sort((a, b) => b[1].length - a[1].length);
+  h('Внешние картинки');
+  if (!rm) {
+    L.push(`Скачивание не запускалось. Внешних ссылок: ${r.links.externalCount}${ext.length ? ` (домены: ${ext.map(([d, u]) => `${d} — ${u.length}`).join(', ')})` : ''}.`, '', 'Чтобы сохранить внешние картинки на новом сайте, запустите экспорт с флагом `--download-remote` (нужен интернет).');
+    return;
+  }
+  L.push(`Найдено внешних файлов: **${rm.total}**; скачано: **${rm.downloaded}**${rm.fromCache ? ` (из кэша: ${rm.fromCache})` : ''}, ${formatBytes(rm.bytes)}; **не удалось: ${rm.failed}**. Файлы лежат в \`public/uploads/remote/\`.`, '');
+  const hosts = Object.entries(rm.hosts).sort((a, b) => b[1].ok + b[1].failed - (a[1].ok + a[1].failed));
+  if (hosts.length) { L.push('| Домен | Скачано | Не удалось |', '|---|---|---|'); for (const [d, v] of hosts) L.push(`| ${d} | ${v.ok} | ${v.failed} |`); }
+  h('Не удалось скачать', 3);
+  if (!rm.failures.length) L.push('Всё скачалось.');
+  else {
+    L.push('В тексте оставлена исходная ссылка и пометка `<!-- TODO(wp-export): картинка недоступна -->`. Если картинка нужна — найдите замену или удалите.', '', '| Адрес | Причина | Где используется |', '|---|---|---|');
+    for (const f of rm.failures) L.push(`| ${mdEscapeCell(f.url)} | ${mdEscapeCell(f.reason)} | ${mdEscapeCell(f.usedBy.join(', ') || '—')} |`);
+  }
+}
+
+function renderGalleries(r, L, h) {
+  const g = r.galleries;
+  if (!g) return;
+  h('Галереи (NextGEN Gallery)');
+  L.push(`Фото скопировано: **${g.photosCopied}** (в \`public/uploads/gallery/<название-галереи>/\`; миниатюры \`thumbs\`/\`dynamic\` не копируются).`, '');
+  if (g.galleries.length) {
+    L.push('| ID | Галерея | Фото | Скопировано | Где используется |', '|---|---|---|---|---|');
+    for (const x of g.galleries) L.push(`| ${x.gid} | ${mdEscapeCell(x.title)} | ${x.photos} | ${x.copied}${x.missingFiles.length ? ` (нет файлов: ${x.missingFiles.length})` : ''} | ${x.usedBy.length ? mdEscapeCell(x.usedBy.join(', ')) : 'не используется'} |`);
+  }
+  const lost = g.galleries.filter((x) => x.missingFiles.length);
+  if (lost.length) { L.push('', '**Файлы фотографий, которых нет в wp-content:**', ''); for (const x of lost) L.push(`- ${mdEscapeCell(x.title)}: ${x.missingFiles.slice(0, 20).join(', ')}${x.missingFiles.length > 20 ? ` … (всего ${x.missingFiles.length})` : ''}`); }
+  if (g.notFound.length) { L.push('', '**Шорткоды ссылаются на то, чего нет в базе** (в тексте — `TODO(wp-export)`):', ''); for (const n of g.notFound) L.push(`- ${n.source}: ${n.what} id=${n.id}`); }
+  if (g.unsupported.length) { L.push('', '**Не перенесено (неподдерживаемый вариант шорткода):**', ''); for (const n of g.unsupported) L.push(`- ${n.source}: ${n.what}`); }
+}
+
+function renderRedaction(r, L, h) {
+  const d = r.redaction;
+  if (!d) return;
+  h('Скрытые e-mail');
+  if (d.mode === 'keep') { L.push('Скрытие отключено (`--keep-user-emails`): e-mail пользователей WordPress в тексте проверяются как обычные адреса.'); return; }
+  if (d.mode === 'off') { L.push('Скрытие отключено — e-mail пользователей WordPress в тексте считаются секретом (код выхода 3).'); return; }
+  if (!d.total) { L.push('E-mail пользователей WordPress в тексте не найдено — скрывать нечего.'); return; }
+  L.push(`Адреса пользователей WordPress заменены на «[адрес скрыт]» (в \`mailto:\`-ссылках заменена вся ссылка): **${d.total}** замен(ы). Это адреса из базы пользователей WP; если нужно оставить публичный контакт — запустите с \`--keep-user-emails --allow-email адрес\`.`, '', '| Файл | Строка | Замен | Адрес |', '|---|---|---|---|');
+  for (const x of d.items) L.push(`| ${x.file} | ${x.line} | ${x.count} | ${x.masked.join(', ')} |`);
 }

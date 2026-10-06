@@ -28,7 +28,8 @@ test('e-mail в тексте страницы → громкое предупр�
   try { r = await runExport({ sql: f.sql, wpContent: f.wpContent, siteUrl: f.siteUrl, out, quiet: true }); } finally { console.error = origErr; }
   assert.equal(r.exitCode, EXIT.EMAILS);
   assert.ok(logged.join('\n').includes('E-MAIL'));
-  assert.ok(r.report.secretsScan.emails.some((e) => e.file.endsWith('contacts.md') && e.email.startsWith('c')));
+  assert.ok(r.report.secretsScan.emails.some((e) => e.file.endsWith('contacts.md') && e.email.startsWith('c') && e.lines.length));
+  assert.match(logged.join('\n'), /contacts\.md, строка \d+: c\*+@kendo-baikal\.ru/);
   assert.ok(!read(out, 'report.md').includes('club@kendo-baikal.ru'), 'в отчёте адрес должен быть замаскирован');
   const r2 = await runExport({ sql: f.sql, wpContent: f.wpContent, siteUrl: f.siteUrl, out, quiet: true, allowEmails: ['club@kendo-baikal.ru'] });
   assert.equal(r2.exitCode, EXIT.OK);
@@ -36,14 +37,38 @@ test('e-mail в тексте страницы → громкое предупр�
   assert.equal(r3.exitCode, EXIT.OK);
 });
 
-test('e-mail пользователя WordPress в тексте → аварийный код 3', async () => {
+test('e-mail пользователя WordPress в тексте → по умолчанию скрывается, код 0', async () => {
+  const { f, out } = withDump((s) => s.replace('Приезжайте!', `Админ: ${FIXTURE_SECRETS.email}`));
+  const r = await runExport({ sql: f.sql, wpContent: f.wpContent, siteUrl: f.siteUrl, out, quiet: true });
+  assert.equal(r.exitCode, EXIT.OK);
+  assert.match(read(out, 'content/pages/contacts.md'), /Админ: \[адрес скрыт\]/);
+  assert.equal(r.report.redaction.total, 2, "в теле и в автоописании");
+  assert.deepEqual(r.report.redaction.items.map((i) => i.line), [3, 6]);
+});
+
+test('e-mail пользователя: без автоскрытия — аварийный код 3 (даже с --allow-email)', async () => {
   const { f, out } = withDump((s) => s.replace('Приезжайте!', `Админ: ${FIXTURE_SECRETS.email}`));
   const origErr = console.error;
   console.error = () => {};
   let r;
-  try { r = await runExport({ sql: f.sql, wpContent: f.wpContent, siteUrl: f.siteUrl, out, quiet: true, allowEmails: [FIXTURE_SECRETS.email] }); } finally { console.error = origErr; }
+  try { r = await runExport({ sql: f.sql, wpContent: f.wpContent, siteUrl: f.siteUrl, out, quiet: true, redactUserEmails: false, allowEmails: [FIXTURE_SECRETS.email] }); } finally { console.error = origErr; }
   assert.equal(r.exitCode, EXIT.SECRETS, 'даже --allow-email не отключает проверку e-mail пользователей');
   assert.ok(r.report.secretsScan.hard.length >= 1);
+});
+
+test('--keep-user-emails: адрес остаётся, но без --allow-email — код 4, с ним — 0', async () => {
+  const { f, out } = withDump((s) => s.replace('Приезжайте!', `Админ: ${FIXTURE_SECRETS.email}`));
+  const origErr = console.error;
+  const logged = [];
+  console.error = (...a) => logged.push(a.join(' '));
+  let r;
+  try { r = await runExport({ sql: f.sql, wpContent: f.wpContent, siteUrl: f.siteUrl, out, quiet: true, keepUserEmails: true }); } finally { console.error = origErr; }
+  assert.equal(r.exitCode, EXIT.EMAILS);
+  assert.match(logged.join('\n'), /contacts\.md, строка [\d, ]+: o\*+@example\.com/);
+  assert.match(logged.join('\n'), /--allow-email/);
+  assert.ok(read(out, 'content/pages/contacts.md').includes(FIXTURE_SECRETS.email));
+  const r2 = await runExport({ sql: f.sql, wpContent: f.wpContent, siteUrl: f.siteUrl, out, quiet: true, keepUserEmails: true, allowEmails: [FIXTURE_SECRETS.email] });
+  assert.equal(r2.exitCode, EXIT.OK);
 });
 
 test('хэш пароля, попавший в контент → код 3', async () => {

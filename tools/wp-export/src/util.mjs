@@ -53,6 +53,16 @@ export function decodeSafe(s) {
   }
 }
 
+/**
+ * Лояльное декодирование процентного кодирования: регистр %XX не важен, «битые» (обрезанные WordPress
+ * на 200 байтах) последовательности не ломают всю строку — неверные байты превращаются в U+FFFD.
+ * Годится для сравнения путей: обе стороны проходят через одну функцию.
+ */
+export function decodeLenient(s) {
+  const dec = new TextDecoder('utf-8', { fatal: false });
+  return String(s).replace(/(?:%[0-9a-fA-F]{2})+/g, (run) => dec.decode(Uint8Array.from(run.slice(1).split('%').map((h) => parseInt(h, 16)))));
+}
+
 /** Кодирует только то, что ломает Markdown/URL, оставляя кириллицу читаемой. */
 export function encodePathForUrl(p) {
   return p.replace(/[ ()#?%"'<>\[\]]/g, (c) => '%' + c.charCodeAt(0).toString(16).toUpperCase().padStart(2, '0'));

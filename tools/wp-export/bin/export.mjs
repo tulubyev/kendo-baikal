@@ -19,6 +19,11 @@ const HELP = `Экспорт WordPress → Astro (kendo-baikal)
   --screenshots-from <url>  сделать скриншоты сайта (нужен playwright; необязательно)
   --max-image-mb <число>  порог предупреждения о тяжёлых файлах (по умолчанию 1)
   --allow-email <адрес|@домен>  разрешить публичный e-mail в тексте (можно несколько раз)
+  --download-remote       скачать внешние картинки (VK, Photon и др.) в public/uploads/remote/ (нужен интернет;
+                          рекомендуется). Повторный запуск берёт готовое из <out>/.remote-cache
+  --remote-max-mb <число> лимит размера одного скачиваемого файла (по умолчанию 25)
+  --redact-user-emails    скрывать e-mail пользователей WordPress в тексте → [адрес скрыт] (включено по умолчанию)
+  --keep-user-emails      НЕ скрывать e-mail пользователей (посторонние адреса всё равно требуют --allow-email)
   --quiet                 меньше сообщений
   -h, --help              эта справка
 
@@ -39,6 +44,10 @@ try {
       'screenshots-from': { type: 'string' },
       'max-image-mb': { type: 'string' },
       'allow-email': { type: 'string', multiple: true },
+      'download-remote': { type: 'boolean' },
+      'remote-max-mb': { type: 'string' },
+      'redact-user-emails': { type: 'boolean' },
+      'keep-user-emails': { type: 'boolean' },
       quiet: { type: 'boolean' },
       help: { type: 'boolean', short: 'h' },
     },
@@ -56,6 +65,15 @@ if (values['slug-mode'] && !['translit', 'keep'].includes(values['slug-mode'])) 
   process.exit(EXIT.USAGE);
 }
 
+if (values['keep-user-emails'] && values['redact-user-emails']) {
+  console.error('--redact-user-emails и --keep-user-emails взаимоисключающие: выберите один (по умолчанию e-mail скрываются).');
+  process.exit(EXIT.USAGE);
+}
+if (values['remote-max-mb'] && !(Number(values['remote-max-mb']) > 0)) {
+  console.error('--remote-max-mb: нужно положительное число');
+  process.exit(EXIT.USAGE);
+}
+
 try {
   const { exitCode } = await runExport({
     sql: values.sql,
@@ -68,6 +86,9 @@ try {
     screenshotsFrom: values['screenshots-from'],
     maxImageMb: values['max-image-mb'],
     allowEmails: values['allow-email'],
+    downloadRemote: values['download-remote'],
+    remoteMaxMb: values['remote-max-mb'],
+    keepUserEmails: values['keep-user-emails'],
     quiet: values.quiet,
   });
   process.exit(exitCode);

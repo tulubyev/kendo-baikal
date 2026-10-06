@@ -1,5 +1,5 @@
 import { slugify } from './slug.mjs';
-import { decodeSafe, encodePathStrict } from './util.mjs';
+import { decodeSafe, decodeLenient, encodePathStrict } from './util.mjs';
 
 /** Планирование структуры нового сайта: slug-и, пути, меню, таблица старых URL. */
 
@@ -225,7 +225,7 @@ function buildMenus(model, plan, termOf) {
 // ---------------------------------------------------------------- старые URL
 
 export function normalizeKey(pathname) {
-  let p = decodeSafe(pathname).toLowerCase();
+  let p = decodeLenient(pathname).toLowerCase();
   p = p.replace(/\/index\.php(?=\/|$)/, '');
   if (!p.startsWith('/')) p = '/' + p;
   if (!p.endsWith('/')) p += '/';
@@ -239,7 +239,13 @@ export function oldPathsFor(entry, plan, model) {
   const p = entry.post;
   const out = [];
   const structure = model.options.permalink_structure || '';
-  const encSeg = (s) => encodePathStrict(decodeSafe(s));
+  // сегмент, который не декодируется (WordPress обрезал post_name посреди %XX), оставляем «как в базе» —
+  // именно так он выглядит в настоящем URL
+  const encSeg = (s) => {
+    const raw = String(s);
+    const d = decodeSafe(raw);
+    return d === raw && /%[0-9a-f]{2}/i.test(raw) ? raw : encodePathStrict(d);
+  };
   if (entry.type === 'post') {
     out.push(`/?p=${p.ID}`);
     if (structure) {
@@ -259,7 +265,7 @@ export function oldPathsFor(entry, plan, model) {
         .replace(/%post_id%/g, String(p.ID))
         .replace(/%postname%/g, name)
         .replace(/%category%/g, plan.categoryChain(p.ID).map(encSeg).join('/'));
-      if (!/%/.test(url.replace(/%[0-9A-F]{2}/g, ''))) out.push(url);
+      if (!/%(year|monthnum|day|hour|minute|second|post_id|postname|category|author|pagename)%/.test(url)) out.push(url); // остался неподставленный тег — URL не построить
     }
   } else {
     out.push(`/?page_id=${p.ID}`);
@@ -304,7 +310,15 @@ export function buildUrlIndex(plan, model) {
     }
     plan.blogEntry = synthetic;
   }
+  // slug → записи (для ссылок вида /slug/ при дата-структуре постоянных ссылок)
+  const bySlug = new Map();
+  for (const e of [...plan.pages, ...plan.posts]) {
+    if (!e.post.post_name) continue;
+    const k = normalizeKey('/' + e.post.post_name + '/');
+    if (!bySlug.has(k)) bySlug.set(k, []);
+    bySlug.get(k).push(e);
+  }
   plan.oldPaths = new Map([...plan.pages, ...plan.posts].map((e) => [e.id, oldPathsFor(e, plan, model)]));
-  plan.urlIndex = { byPath, byQuery };
+  plan.urlIndex = { byPath, byQuery, bySlug };
   return plan.urlIndex;
 }

@@ -376,10 +376,11 @@ function inline(n, c) {
       if (!inner.trim()) return '';
       const url = c.rewriteUrl(href, 'a', textOf(n));
       if (url == null) return inner;
+      const todo = c.takeTodo?.();
       const title = attr(n, 'title');
       const lead = /^\s*/.exec(inner)[0];
       const trail = /\s*$/.exec(inner)[0];
-      return `${lead}[${inner.trim()}](${url}${title ? ` "${title.replace(/"/g, "'")}"` : ''})${trail}`;
+      return `${lead}[${inner.trim()}](${url}${title ? ` "${title.replace(/"/g, "'")}"` : ''})${todo ? ` <!-- TODO(wp-export): ${todo} -->` : ''}${trail}`;
     }
     case 'iframe':
     case 'video':

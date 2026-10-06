@@ -26,7 +26,7 @@ function isoModified(p) {
   return (p.post_modified || '').replace(' ', 'T');
 }
 
-export function buildContent({ model, plan, media, links, outDir, log }) {
+export function buildContent({ model, plan, media, links, ngg = null, outDir, log }) {
   const collected = {
     embeds: [], // { source, kind, url }
     forms: [], // { source, what }
@@ -71,6 +71,9 @@ export function buildContent({ model, plan, media, links, outDir, log }) {
     const source = `${e.type === 'page' ? 'page' : 'post'}:${e.relPath}`;
     links.setSource(source);
     const env = {
+      source,
+      ngg,
+      takeTodo: links.takeTodo,
       reusableBlocks: plan.reusableBlocks,
       attachmentsOf,
       attachmentUrl,

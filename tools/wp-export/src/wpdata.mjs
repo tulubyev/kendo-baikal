@@ -7,7 +7,7 @@ import { phpUnserialize, phpList } from './php.mjs';
  * «канарейки» (e-mail, хэши) в память — чтобы потом убедиться, что их нет в выводе.
  */
 
-const TABLE_RE = /^(.*?)(postmeta|posts|options|terms|term_taxonomy|term_relationships|users)$/;
+const TABLE_RE = /^(.*?)(postmeta|posts|options|terms|term_taxonomy|term_relationships|users|ngg_gallery|ngg_pictures|ngg_album)$/;
 
 const DEFAULT_COLUMNS = {
   posts: ['ID', 'post_author', 'post_date', 'post_date_gmt', 'post_content', 'post_title', 'post_excerpt', 'post_status', 'comment_status', 'ping_status', 'post_password', 'post_name', 'to_ping', 'pinged', 'post_modified', 'post_modified_gmt', 'post_content_filtered', 'post_parent', 'guid', 'menu_order', 'post_type', 'post_mime_type', 'comment_count'],
@@ -16,6 +16,9 @@ const DEFAULT_COLUMNS = {
   terms: ['term_id', 'name', 'slug', 'term_group'],
   term_taxonomy: ['term_taxonomy_id', 'term_id', 'taxonomy', 'description', 'parent', 'count'],
   term_relationships: ['object_id', 'term_taxonomy_id', 'term_order'],
+  ngg_gallery: ['gid', 'name', 'slug', 'path', 'title', 'galdesc', 'pageid', 'previewpic', 'author'],
+  ngg_pictures: ['pid', 'image_slug', 'post_id', 'galleryid', 'filename', 'description', 'alttext', 'imagedate', 'exclude', 'sortorder', 'meta_data'],
+  ngg_album: ['id', 'name', 'slug', 'previewpic', 'albumdesc', 'sortorder', 'pageid'],
   users: ['ID', 'user_login', 'user_pass', 'user_nicename', 'user_email', 'user_url', 'user_registered', 'user_activation_key', 'user_status', 'display_name'],
 };
 
@@ -47,6 +50,8 @@ export function emptyModel() {
     counts: { skipped: {}, protected: 0, private: 0, trashed: 0 },
     canaries: { emails: new Set(), hashes: new Set() },
     userCount: 0,
+    // NextGEN Gallery (если таблицы есть в дампе)
+    ngg: { galleries: new Map(), pictures: new Map(), albums: new Map() },
   };
 }
 
@@ -137,6 +142,8 @@ function slimRow(suffix, o) {
       if (OPTION_KEYS.has(n) || n.startsWith('theme_mods_')) return { option_name: n, option_value: o.option_value };
       return null;
     }
+    case 'ngg_pictures':
+      return { pid: o.pid, galleryid: o.galleryid, filename: o.filename, description: o.description, alttext: o.alttext, exclude: o.exclude, sortorder: o.sortorder };
     case 'users':
       return { user_email: o.user_email, user_pass: o.user_pass, user_activation_key: o.user_activation_key };
     case 'posts': {
@@ -204,6 +211,23 @@ export function buildModel(b, prefix) {
     const id = Number(r.object_id);
     if (!model.relationships.has(id)) model.relationships.set(id, []);
     model.relationships.get(id).push(Number(r.term_taxonomy_id));
+  }
+
+  for (const gl of b.ngg_gallery || []) {
+    const gid = Number(gl.gid);
+    model.ngg.galleries.set(gid, { gid, name: gl.name || '', slug: gl.slug || '', path: gl.path || '', title: gl.title || '', previewpic: Number(gl.previewpic) || 0 });
+  }
+  for (const pc of b.ngg_pictures || []) {
+    const gid = Number(pc.galleryid);
+    if (!model.ngg.pictures.has(gid)) model.ngg.pictures.set(gid, []);
+    model.ngg.pictures.get(gid).push({ pid: Number(pc.pid), gid, filename: pc.filename || '', description: pc.description || '', alttext: pc.alttext || '', exclude: Number(pc.exclude) === 1, sortorder: Number(pc.sortorder) || 0 });
+  }
+  for (const list of model.ngg.pictures.values()) list.sort((a, b) => a.sortorder - b.sortorder || a.pid - b.pid);
+  for (const al of b.ngg_album || []) {
+    const id = Number(al.id);
+    let order = [];
+    try { order = phpList(phpUnserialize(al.sortorder)).map(String); } catch { /* пусто */ }
+    model.ngg.albums.set(id, { id, name: al.name || '', slug: al.slug || '', order });
   }
 
   for (const u of b.users || []) {
