@@ -12,7 +12,7 @@ const crumbs = [{ title: 'Главная', href: '/' }, { title: 'Новости
 ---
 
 <Base title={title} description={description} image={cover} type="article" publishedTime={date} modifiedTime={updated}>
-  <div class="container section">
+  <div class="panel">
     <Breadcrumbs items={crumbs} />
     <article>
       <header class="head">
@@ -22,7 +22,6 @@ const crumbs = [{ title: 'Главная', href: '/' }, { title: 'Новости
           {updated && <span> · обновлено <time datetime={isoDate(updated)}>{formatDate(updated)}</time></span>}
         </p>
         <h1>{title}</h1>
-        {description && <p class="lead">{description}</p>}
       </header>
       {cover && <Cover src={cover} eager class="hero" />}
       <div class="prose">
@@ -44,7 +43,6 @@ const crumbs = [{ title: 'Главная', href: '/' }, { title: 'Новости
   .head { max-width: var(--prose-width); margin-bottom: var(--space-5); }
   .head .meta { margin: 0 0 var(--space-2); }
   .head h1 { margin-bottom: var(--space-3); }
-  .head .lead { margin: 0; }
   :global(.hero) { margin-bottom: var(--space-6); }
   .tags { display: flex; flex-wrap: wrap; gap: var(--space-2); list-style: none; padding: 0; margin: var(--space-5) 0 0; }
   .tags li { padding: var(--space-1) var(--space-3); background: var(--color-surface); border-radius: var(--radius); font-size: var(--text-sm); color: var(--color-text-muted); }

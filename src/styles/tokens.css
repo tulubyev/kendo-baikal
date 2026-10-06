@@ -1,41 +1,51 @@
 /*
  * Дизайн-токены. ВСЕ визуальные параметры сайта живут здесь.
- * Значения временные, нейтральные — при переносе дизайна (design-import/tokens.json)
- * меняются только этот файл и подключение шрифтов в Base.astro.
+ * Источник: design-import/tokens.json и theme/ink-and-wash/style.css (старая тема «тушь и акварель»):
+ * тёплая сепия, фон #e3ddcd, текст #222, акцент #6b3909, контейнер 950px.
+ * Китайский шрифтовой стек и пиксельные размеры (12px) старой темы НЕ перенесены:
+ * основной текст ≥16px, шрифты — локальные (см. fonts.css), без CDN.
  */
 :root {
   /* Цвета */
-  --color-bg: #ffffff;
-  --color-surface: #f4f5f7;
-  --color-text: #1b1f24;
-  --color-text-muted: #5a6370;
-  --color-border: #d9dde3;
-  --color-accent: #b3222e;
-  --color-accent-hover: #8f1a24;
-  --color-on-accent: #ffffff;
-  --color-link: #a01c28;
+  --color-bg: #e3ddcd;
+  --color-paper: #f4f0e8;         /* «лист» под контентом */
+  --color-surface: #ebe5d5;       /* плашки, цитаты, код */
+  --color-text: #222222;
+  --color-text-muted: #55503f;    /* контраст на --color-paper ≈ 7:1 */
+  --color-heading: #111111;
+  --color-border: #ccbf9c;
+  --color-border-soft: #d8cca7;
+  --color-accent: #6b3909;
+  --color-accent-hover: #4b2606;
+  --color-on-accent: #f4f0e8;
+  --color-link: #5a4a1c;
+  --color-link-visited: #5a4a1c;
+  --color-green: #2e5a2b;         /* зелёные детали старой темы (даты, рубрики) */
   --color-focus: #1a5fd0;
-  --color-header-bg: #ffffff;
-  --color-footer-bg: #1b1f24;
-  --color-footer-text: #dfe3e8;
-  --color-footer-link: #ffffff;
+  --color-nav-bg: #3a3326;        /* «тушь» — кнопки меню */
+  --color-nav-text: #f4f0e8;
+  --color-nav-hover: #6b3909;
+  --color-header-bg: #e3ddcd;
+  --color-footer-bg: #d4cdb9;
+  --color-footer-text: #3d382b;
+  --color-footer-link: #3a2a0a;
 
   /* Шрифты */
   --font-body: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
-  --font-heading: var(--font-body);
+  --font-heading: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, 'Times New Roman', 'DejaVu Serif', serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --font-weight-normal: 400;
   --font-weight-bold: 700;
 
-  /* Размеры текста */
-  --text-xs: 0.8125rem;
+  /* Размеры текста (основной — 17px) */
+  --text-xs: 0.875rem;
   --text-sm: 0.9375rem;
   --text-base: 1.0625rem;
-  --text-lg: 1.25rem;
-  --text-xl: clamp(1.4rem, 1.2rem + 1vw, 1.75rem);
-  --text-2xl: clamp(1.75rem, 1.4rem + 1.8vw, 2.5rem);
+  --text-lg: 1.1875rem;
+  --text-xl: clamp(1.3rem, 1.15rem + 0.8vw, 1.6rem);
+  --text-2xl: clamp(1.6rem, 1.3rem + 1.5vw, 2.2rem);
   --leading-body: 1.65;
-  --leading-heading: 1.2;
+  --leading-heading: 1.25;
 
   /* Отступы */
   --space-1: 0.25rem;
@@ -48,15 +58,19 @@
   --space-8: 4.5rem;
 
   /* Геометрия */
-  --container-width: 72rem;
-  --prose-width: 44rem;
+  --container-width: 59.375rem;   /* 950px — как в старой теме */
+  --sidebar-width: 13.5rem;       /* 216px */
+  --prose-width: 100%;
   --gutter: 1rem;
-  --radius-sm: 0.25rem;
-  --radius: 0.5rem;
-  --radius-lg: 0.875rem;
+  --radius-sm: 0.1875rem;
+  --radius: 0.1875rem;            /* 3px из tokens.json */
+  --radius-lg: 0.3125rem;         /* 5px */
   --header-height: 4rem;
-  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.06), 0 2px 8px rgb(0 0 0 / 0.04);
+  --shadow-card: 0 1px 2px rgb(60 45 15 / 0.12);
   --cover-ratio: 16 / 9;
+
+  /* Текстура бумаги (из старой темы, 4 КБ) */
+  --bg-paper: url('/theme/paper.jpg');
 }
 
 @media (min-width: 48em) {

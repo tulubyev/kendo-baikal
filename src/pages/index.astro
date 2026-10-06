@@ -14,32 +14,27 @@ const { title, description, image } = home.data;
 ---
 
 <Base title={SITE.name} description={description}>
-  <section class="container section intro">
-    <h1>{title}</h1>
-    {description && <p class="lead">{description}</p>}
-    {image && <Cover src={image} eager class="hero" />}
-    <div class="prose"><Content /></div>
-  </section>
+  <div class="panel">
+    <section class="intro">
+      <h1>{title}</h1>
+      {image && <Cover src={image} eager class="hero" />}
+      <div class="prose"><Content /></div>
+    </section>
 
-  {
-    latest.length > 0 && (
-      <section class="container section" aria-labelledby="latest">
-        <div class="row">
+    {
+      latest.length > 0 && (
+        <section class="latest" aria-labelledby="latest">
           <h2 id="latest">Последние новости</h2>
-          <a href="/news/">Все новости →</a>
-        </div>
-        <div class="cards">
           {latest.map((post) => <PostCard post={post} />)}
-        </div>
-      </section>
-    )
-  }
+          <p class="all"><a href="/news/">Все новости →</a></p>
+        </section>
+      )
+    }
+  </div>
 </Base>
 
 <style>
-  .intro .lead { max-width: var(--prose-width); }
-  :global(.hero) { margin-block: var(--space-5) var(--space-6); }
-  .row { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap; margin-bottom: var(--space-4); }
-  .row h2 { margin: 0; }
-  .cards { display: grid; gap: var(--space-5); grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); }
+  :global(.hero) { margin-block: var(--space-4); }
+  .latest { margin-top: var(--space-6); padding-top: var(--space-4); border-top: 1px solid var(--color-border); }
+  .all { margin: var(--space-3) 0 0; }
 </style>

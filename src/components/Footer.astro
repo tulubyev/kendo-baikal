@@ -6,49 +6,28 @@ const year = new Date().getFullYear();
 ---
 
 <footer class="site-footer">
-  <div class="container grid">
+  <div class="wrap inner">
     <div>
-      <p class="name">{SITE.name}</p>
-      <p>{SITE.description}</p>
-    </div>
-    <address>
-      <p class="name">Контакты</p>
+      <p class="name">© 2003–{year} {SITE.name}</p>
       {contacts.address && <p>{contacts.address}</p>}
-      {contacts.schedule && <p>{contacts.schedule}</p>}
       {contacts.phone && <p><a href={`tel:${contacts.phone.replace(/[^+\d]/g, '')}`}>{contacts.phone}</a></p>}
       {contacts.email && <p><a href={`mailto:${contacts.email}`}>{contacts.email}</a></p>}
-    </address>
-    {
-      links.length > 0 && (
-        <nav aria-label="Социальные сети">
-          <p class="name">Мы в сети</p>
-          <ul>
-            {links.map((s) => (
-              <li><a href={s.url} rel="noopener" target="_blank">{s.title}</a></li>
-            ))}
-          </ul>
-        </nav>
-      )
-    }
+    </div>
+    <nav aria-label="Дополнительные ссылки">
+      <ul>
+        <li><a href="/kak-nas-nayti/">Контакты и расписание</a></li>
+        {links.map((s) => <li><a href={s.url} rel="noopener" target="_blank">{s.title}</a></li>)}
+        <li><a href="/rss.xml">RSS</a></li>
+      </ul>
+    </nav>
   </div>
-  <div class="container copy">© {year} {SITE.name}. <a href="/rss.xml">RSS</a></div>
 </footer>
 
 <style>
-  .site-footer {
-    margin-top: var(--space-8);
-    padding-block: var(--space-7) var(--space-5);
-    background: var(--color-footer-bg);
-    color: var(--color-footer-text);
-    font-size: var(--text-sm);
-  }
+  .site-footer { margin-top: var(--space-7); padding-block: var(--space-5); background: var(--color-footer-bg) var(--bg-paper); color: var(--color-footer-text); border-top: 1px solid var(--color-border); font-size: var(--text-sm); }
   .site-footer a { color: var(--color-footer-link); }
-  .grid { display: grid; gap: var(--space-6); }
-  @media (min-width: 48em) { .grid { grid-template-columns: 2fr 2fr 1fr; } }
-  .name { font-weight: var(--font-weight-bold); font-size: var(--text-base); margin: 0 0 var(--space-2); }
-  p { margin: 0 0 var(--space-2); }
-  address { font-style: normal; }
-  ul { list-style: none; margin: 0; padding: 0; }
-  li { margin-bottom: var(--space-1); }
-  .copy { margin-top: var(--space-6); padding-top: var(--space-4); border-top: 1px solid rgb(255 255 255 / 0.18); }
+  .inner { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-4) var(--space-6); }
+  p { margin: 0 0 var(--space-1); }
+  .name { font-weight: var(--font-weight-bold); }
+  ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); }
 </style>

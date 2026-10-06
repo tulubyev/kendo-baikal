@@ -19,16 +19,34 @@ export interface NavItem {
   title: string;
   href: string;
   order: number;
+  children: NavItem[];
 }
 
-/** Главное меню: страницы с menu: true + extraNav из site.config, по order. */
+/**
+ * Главное меню: страницы с menu: true + extraNav из site.config, по order.
+ * Вложенность — по пути: poleznye-materialy/kalendar становится подпунктом poleznye-materialy,
+ * если родитель тоже в меню (иначе — пункт верхнего уровня).
+ */
 export async function getMenu(): Promise<NavItem[]> {
   const pages = await getPages();
-  const items: NavItem[] = pages
+  const flat = pages
     .filter((p) => p.data.menu && p.id !== 'index')
-    .map((p) => ({ title: p.data.title, href: pageUrl(p.id), order: p.data.order ?? 100 }));
-  items.push(...SITE.extraNav.map((n) => ({ ...n })));
-  return items.sort((a, b) => a.order - b.order || a.title.localeCompare(b.title, 'ru'));
+    .map((p) => ({ id: p.id, title: p.data.title, href: pageUrl(p.id), order: p.data.order ?? 100, children: [] as NavItem[] }));
+  const byId = new Map(flat.map((n) => [n.id, n]));
+  const top: NavItem[] = [];
+  for (const n of flat) {
+    const parts = n.id.split('/');
+    let parent: NavItem | undefined;
+    for (let i = parts.length - 1; i > 0 && !parent; i--) parent = byId.get(parts.slice(0, i).join('/'));
+    (parent ? parent.children : top).push(n);
+  }
+  top.push(...SITE.extraNav.map((n) => ({ ...n, children: [] as NavItem[] })));
+  const sort = (items: NavItem[]) => {
+    items.sort((a, b) => a.order - b.order || a.title.localeCompare(b.title, 'ru'));
+    items.forEach((i) => sort(i.children));
+    return items;
+  };
+  return sort(top);
 }
 
 export interface Crumb {

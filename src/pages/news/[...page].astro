@@ -19,11 +19,11 @@ const title = page.currentPage > 1 ? `Новости — страница ${page
 ---
 
 <Base title={title} description={`Новости клуба «${SITE.name}»`}>
-  <div class="container section">
+  <div class="panel">
     <Breadcrumbs items={[{ title: 'Главная', href: '/' }, { title: 'Новости' }]} />
     <h1>Новости</h1>
     {page.data.length === 0 && <p>Пока новостей нет.</p>}
-    <div class="cards">
+    <div class="list">
       {page.data.map((post) => <PostCard post={post} />)}
     </div>
     <Pagination current={page.currentPage} total={page.lastPage} href={href} />
@@ -31,5 +31,5 @@ const title = page.currentPage > 1 ? `Новости — страница ${page
 </Base>
 
 <style>
-  .cards { display: grid; gap: var(--space-5); grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); }
+  h1 { margin-bottom: var(--space-4); }
 </style>

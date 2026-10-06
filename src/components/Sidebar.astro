@@ -1,0 +1,47 @@
+---
+import { getPosts, postUrl } from '../lib/content';
+import { formatDate } from '../lib/date';
+
+const latest = (await getPosts()).slice(0, 8);
+---
+
+<aside class="sidebar" aria-label="Дополнительно">
+  <section>
+    <h2>Последние записи</h2>
+    <ul>
+      {
+        latest.map((p) => (
+          <li>
+            <a href={postUrl(p.id)}>{p.data.title}</a>
+            <time class="when">{formatDate(p.data.date)}</time>
+          </li>
+        ))
+      }
+    </ul>
+    <p class="all"><a href="/news/">Все новости →</a></p>
+  </section>
+  <section>
+    <h2>Ссылки</h2>
+    <ul>
+      <li><a href="http://forum.kendo-baikal.ru/" rel="noopener">Форум</a></li>
+      <li><a href="/poleznye-materialy/">Дополнительные материалы</a></li>
+      <li><a href="/rss.xml">RSS-лента</a></li>
+    </ul>
+  </section>
+</aside>
+
+<style>
+  .sidebar h2 {
+    margin: 0 0 var(--space-2); padding: var(--space-2) var(--space-3);
+    background: var(--color-nav-bg); color: var(--color-nav-text);
+    font-family: var(--font-body); font-size: var(--text-sm); font-weight: var(--font-weight-normal);
+    border-radius: var(--radius-lg);
+  }
+  section { margin-bottom: var(--space-5); }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li { padding: var(--space-2) 0; border-bottom: 1px dashed #8a8371; font-size: var(--text-sm); line-height: 1.4; }
+  li a { color: var(--color-text); }
+  li a:hover { color: var(--color-accent); }
+  .when { display: block; color: var(--color-text-muted); font-size: var(--text-xs); margin-top: 2px; }
+  .all { margin: var(--space-2) 0 0; font-size: var(--text-sm); }
+</style>
