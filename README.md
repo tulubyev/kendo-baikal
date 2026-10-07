@@ -82,4 +82,5 @@ draft: false              # true — не собирается
 - `scripts/check-links.allow` — файлы, которых пока нет (ждём от владельца); список пустеет по мере добавления.
 - Адреса ленты: `/news/` (стр. 1), `/news/page/N/`, запись — `/news/<slug>/`.
 - Что надо уточнить у владельца и проверить вручную — [`docs/CONTENT-TODO.md`](docs/CONTENT-TODO.md). Админка — [`docs/ADMIN.md`](docs/ADMIN.md), деплой — [`DEPLOY.md`](DEPLOY.md).
+- Админка (`/admin/`, Sveltia CMS): вход кнопкой **«Войти через GitHub»** через собственный мини-прокси [`oauth/`](oauth/README.md) (Node.js без зависимостей, ≤ 48 МБ; `cd oauth && npm test`), правки редакторов идут через pull request и публикуются после одобрения владельца (редакционный процесс + защита ветки `main`). Запасной вход — по токену.
 - Скриншоты нового сайта для сравнения со старым — `docs/screenshots/`; старого — `design-import/screenshots/`.

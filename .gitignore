@@ -6,6 +6,7 @@ wp-config.php
 .env
 .env.*
 !.env.example
+!.env.oauth.example
 export-private/
 
 # node / astro

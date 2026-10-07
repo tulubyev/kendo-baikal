@@ -4,9 +4,22 @@ backend:
   name: github
   repo: tulubyev/kendo-baikal
   branch: main
+  # Вход кнопкой «Войти через GitHub»: окно открывается по адресу base_url/auth_endpoint
+  # (= https://kendo-baikal.ru/oauth/auth) — это наш мини-прокси, см. oauth/ и docs/ADMIN.md.
+  # Кнопка «вход по токену» остаётся запасной (auth_methods не задан).
+  base_url: https://kendo-baikal.ru/oauth
+  auth_endpoint: auth
+  # Минимально достаточный доступ к ПУБЛИЧНОМУ репозиторию (коммиты, PR, метки).
+  # Для приватного репозитория понадобился бы `repo`.
+  auth_scope: public_repo
+  # Один коммит на запись при публикации (аккуратная история main).
+  squash_merges: true
 
-# Прямой коммит в main (без редакционного workflow) — просто для небольшого клуба.
-publish_mode: simple
+# Редакционный процесс: правка → ветка cms/<коллекция>/<адрес> + pull request с меткой статуса
+# («Черновик» → «На рассмотрении» → «Готово»). «Опубликовать» сливает PR в main.
+# Чтобы редакторы не могли опубликовать сами — включите защиту ветки main (docs/ADMIN.md).
+# Откат на прямые коммиты: publish_mode: simple.
+publish_mode: editorial_workflow
 locale: ru
 site_url: https://kendo-baikal.ru
 display_url: https://kendo-baikal.ru
