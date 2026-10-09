@@ -33,8 +33,9 @@ VPS: docker compose pull && up -d  →  Traefik  →  https://kendo-baikal.ru
 - **Админка — git-based CMS** (Sveltia CMS, формат конфига совместим с Decap CMS) — статический
   SPA по адресу `/admin/`, без серверной части и без БД, 0 МБ RAM на сервере.
   Контент = Markdown-файлы в репозитории, картинки = `public/uploads/`.
-  Вход: GitHub (редакторы приглашаются коллабораторами репозитория; вход по персональному токену
-  или OAuth — решает агент `admin-deploy`, обосновав выбор в `docs/ADMIN.md`).
+  Вход: GitHub (редакторы приглашаются коллабораторами репозитория). Основной — кнопка «Войти через GitHub»
+  через мини-прокси `oauth/` (отдельный контейнер ≤ 48 МБ, опциональный профиль Compose `oauth`);
+  запасной — персональный токен. Правки редакторов — pull request'ы (editorial workflow), публикуются после одобрения.
   Если Sveltia не подходит — допустим Decap CMS (+ мини OAuth-прокси в отдельном контейнере ≤30 МБ).
 - Сборка **только в GitHub Actions**, образ в GHCR, на VPS — только `pull` и `up -d`.
 - `www.kendo-baikal.ru` → 301 на `kendo-baikal.ru`.

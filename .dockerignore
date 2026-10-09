@@ -11,3 +11,5 @@ docs
 .env*
 *.sql
 *.sql.gz
+oauth
+.env.oauth*

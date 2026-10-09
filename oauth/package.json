@@ -1,0 +1,12 @@
+{
+  "name": "kendo-baikal-oauth",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Минимальный OAuth-прокси GitHub для Sveltia CMS. Без зависимостей.",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test \"test/*.test.mjs\""
+  }
+}

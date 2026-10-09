@@ -43,6 +43,40 @@ services:
       - traefik.http.middlewares.kendo-baikal-www-redirect.redirectregex.replacement=https://kendo-baikal.ru/$${1}
       - traefik.http.middlewares.kendo-baikal-www-redirect.redirectregex.permanent=true
 
+  # «Войти через GitHub» для админки (/admin/). Необязательный: запускается только с профилем oauth
+  # (deploy.sh включает его, когда на VPS есть файл .env.oauth). Секреты — только из .env.oauth.
+  kendo-baikal-oauth:
+    profiles: ["oauth"]
+    image: ghcr.io/tulubyev/kendo-baikal-oauth:${OAUTH_IMAGE_TAG:-latest}
+    container_name: kendo-baikal-oauth
+    restart: unless-stopped
+    env_file: .env.oauth
+    mem_limit: 48m
+    memswap_limit: 48m
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - traefik-public
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080/oauth/healthz"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik-public
+      # Только /oauth/* на основном домене. Приоритет выше основного роутера (у него — длина правила, ~26).
+      - traefik.http.routers.kendo-baikal-oauth.rule=Host(`kendo-baikal.ru`) && PathPrefix(`/oauth`)
+      - traefik.http.routers.kendo-baikal-oauth.priority=100
+      - traefik.http.routers.kendo-baikal-oauth.entrypoints=websecure
+      - traefik.http.routers.kendo-baikal-oauth.tls.certresolver=letsencrypt
+      - traefik.http.routers.kendo-baikal-oauth.service=kendo-baikal-oauth
+      - traefik.http.services.kendo-baikal-oauth.loadbalancer.server.port=8080
+
 networks:
   traefik-public:
     external: true
