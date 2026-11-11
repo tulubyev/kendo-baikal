@@ -10,7 +10,25 @@ set -euo pipefail
 
 cd "$(dirname "$(readlink -f "$0")")"
 
-COMPOSE=(docker compose -f docker-compose.prod.yml)
+# Новый сервер использует два файла; старый формат также поддерживается.
+if [ -f compose.yaml ]; then
+  COMPOSE=(docker compose -p kendo-baikal -f compose.yaml)
+  SPLIT_COMPOSE=1
+else
+  COMPOSE=(docker compose -f docker-compose.prod.yml)
+  SPLIT_COMPOSE=0
+fi
+
+# Ограниченный SSH-ключ может передать только SHA опубликованного образа.
+if [ -n "${SSH_ORIGINAL_COMMAND:-}" ]; then
+  if [[ "$SSH_ORIGINAL_COMMAND" =~ ^deploy\ ([0-9a-f]{40})$ ]]; then
+    IMAGE_TAG="${BASH_REMATCH[1]}"
+    OAUTH_IMAGE_TAG="$IMAGE_TAG"
+  else
+    printf 'Недопустимая команда деплоя\n' >&2
+    exit 1
+  fi
+fi
 SERVICE=kendo-baikal-web
 OAUTH_SERVICE=kendo-baikal-oauth
 export IMAGE_TAG="${IMAGE_TAG:-latest}"
@@ -24,7 +42,7 @@ die() { printf '[deploy] ОШИБКА: %s\n' "$*" >&2; exit 1; }
 exec 9>.deploy.lock
 flock -n 9 || die "уже идёт другой деплой (.deploy.lock)"
 
-[ -f docker-compose.prod.yml ] || die "нет docker-compose.prod.yml в $(pwd)"
+"${COMPOSE[@]}" config -q || die "конфигурация Compose не прошла проверку"
 docker network inspect traefik-public >/dev/null 2>&1 || die "нет Docker-сети traefik-public"
 
 # Нет .env.oauth — прокси не трогаем, сайт деплоится как раньше. Пустой/кривой файл прокси сам не пропустит
@@ -32,7 +50,12 @@ docker network inspect traefik-public >/dev/null 2>&1 || die "нет Docker-се
 OAUTH=0
 if [ -f .env.oauth ]; then
   OAUTH=1
-  COMPOSE+=(--profile oauth)
+  if [ "$SPLIT_COMPOSE" = 1 ]; then
+    [ -f compose.oauth.yaml ] || die "нет compose.oauth.yaml"
+    COMPOSE+=(-f compose.oauth.yaml)
+  else
+    COMPOSE+=(--profile oauth)
+  fi
   SERVICES+=("$OAUTH_SERVICE")
   chmod 600 .env.oauth 2>/dev/null || true
   log "найден .env.oauth — OAuth-прокси включён (ghcr.io/tulubyev/kendo-baikal-oauth:${OAUTH_IMAGE_TAG})"
@@ -45,7 +68,8 @@ log "pull…"
 "${COMPOSE[@]}" pull "${SERVICES[@]}" || die "не удалось скачать образ (права на пакет GHCR? см. DEPLOY.md)"
 
 log "up -d…"
-"${COMPOSE[@]}" up -d --remove-orphans
+"${COMPOSE[@]}" config -q
+"${COMPOSE[@]}" up -d "${SERVICES[@]}"
 
 log "жду healthy (до 60 с)…"
 status=starting
@@ -63,18 +87,16 @@ if [ "$OAUTH" = 1 ]; then
   log "жду healthy у $OAUTH_SERVICE (до 30 с)…"
   ostatus=starting
   for _ in $(seq 1 15); do
-    ostatus="$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$OAUTH_SERVICE" 2>/dev/null || echo missing)"
+    ostatus="$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$("${COMPOSE[@]}" ps -q "$OAUTH_SERVICE")" 2>/dev/null || echo missing)"
     [ "$ostatus" = healthy ] && break
     sleep 2
   done
   if [ "$ostatus" != healthy ]; then
     # Сайт уже выложен и работает; прокси — дополнение, поэтому деплой не падает, но шумим.
     "${COMPOSE[@]}" logs --tail=20 "$OAUTH_SERVICE" >&2 || true
-    log "ВНИМАНИЕ: $OAUTH_SERVICE не healthy ($ostatus): вход кнопкой GitHub не работает, вход по токену — работает. См. DEPLOY.md"
+    die "$OAUTH_SERVICE не healthy ($ostatus)"
   fi
 fi
 
-log "чищу неиспользуемые образы…"
-docker image prune -f >/dev/null
 
 log "готово: $(docker inspect -f '{{.Config.Image}} ({{.Image}})' "$SERVICE")"

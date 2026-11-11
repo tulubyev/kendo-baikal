@@ -88,6 +88,7 @@ jobs:
     steps:
       - name: Деплой на VPS по SSH
         env:
+          DEPLOY_SHA: ${{ github.sha }}
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
           DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
@@ -97,12 +98,11 @@ jobs:
           install -d -m 700 ~/.ssh
           printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          if [ -n "$DEPLOY_KNOWN_HOSTS" ]; then
-            printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
-          else
-            echo "::warning::Секрет DEPLOY_KNOWN_HOSTS не задан — отпечаток хоста берётся через ssh-keyscan (менее надёжно)"
-            ssh-keyscan -T 10 "$DEPLOY_HOST" > ~/.ssh/known_hosts
-          fi
-          # Команда задаётся на сервере в authorized_keys (command="…deploy.sh"), аргумент игнорируется.
+          : "${DEPLOY_HOST:?Не задан DEPLOY_HOST}"
+          : "${DEPLOY_USER:?Не задан DEPLOY_USER}"
+          : "${DEPLOY_SSH_KEY:?Не задан DEPLOY_SSH_KEY}"
+          : "${DEPLOY_KNOWN_HOSTS:?Не задан DEPLOY_KNOWN_HOSTS}"
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          # Команда задаётся на сервере в authorized_keys (command="…deploy.sh"), передаётся SHA собранного коммита.
           ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
-            "$DEPLOY_USER@$DEPLOY_HOST" deploy
+            "$DEPLOY_USER@$DEPLOY_HOST" "deploy $DEPLOY_SHA"
